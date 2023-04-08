@@ -19,10 +19,10 @@ public class Parser {
 	}
    }
    
-   public void match(int type) {
+   public void match(TokenType type) {
 	   if(lookahead.getType() == type) {
 		   consume();
-	   } else throw new RuntimeException("parsing error: expecting " + input.getTokenName(type) 
+	   } else throw new RuntimeException("parsing error: expecting " + type.name()
 	   + "; found " + lookahead);
    }
 }

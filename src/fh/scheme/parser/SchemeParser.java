@@ -16,7 +16,7 @@ public class SchemeParser extends Parser {
 	}
 
 	public List<Entry> program() {
-		while (lookahead.getType() != SchemeLexer.EOF) {
+		while (lookahead.getType() != TokenType.EOF) {
 			form();
 			progast.add(ast);
 			ast = null;
@@ -26,8 +26,8 @@ public class SchemeParser extends Parser {
 	}
 
 	@Override
-	public void match(int type) {
-		if ((type != SchemeLexer.LPARENTHESIS) && (type != SchemeLexer.RPARENTHESIS)) {
+	public void match(TokenType type) {
+		if ((type != TokenType.LPARENTHESIS) && (type != TokenType.RPARENTHESIS)) {
 			Entry neu = new Entry(lookahead);
 			if (currententry != null) {
 				currententry.addChildren(neu);
@@ -40,38 +40,38 @@ public class SchemeParser extends Parser {
 
 	public void element() {
 		switch (lookahead.getType()) {
-		case SchemeLexer.LPARENTHESIS:
+		case LPARENTHESIS:
 			liste();
 			break;
-		case SchemeLexer.ELEMENT:
-			match(SchemeLexer.ELEMENT);
+		case ELEMENT:
+			match(TokenType.ELEMENT);
 			break;
-		case SchemeLexer.NUMBER:
-			match(SchemeLexer.NUMBER);
+		case NUMBER:
+			match(TokenType.NUMBER);
 			break;
-		case SchemeLexer.BOOLEAN:
-			match(SchemeLexer.BOOLEAN);
+		case BOOLEAN:
+			match(TokenType.BOOLEAN);
 			break;
-		case SchemeLexer.STRING:
-			match(SchemeLexer.STRING);
+		case STRING:
+			match(TokenType.STRING);
 			break;
-		case SchemeLexer.OPERATOR:
-			match(SchemeLexer.OPERATOR);
+		case OPERATOR:
+			match(TokenType.OPERATOR);
 			break;
-		case SchemeLexer.QUOTE:
+		case QUOTE:
 			quoted();
 			break;
 		default:
 			throw new RuntimeException("SchemeParser: no valid element; read" + lookahead);
 
 		}
-		if (lookahead.getType() == SchemeLexer.LPARENTHESIS) {
+		if (lookahead.getType() == TokenType.LPARENTHESIS) {
 			liste();
 		}
 	}
 
 	public void elements() {
-		while (lookahead.getType() != SchemeLexer.RPARENTHESIS) {
+		while (lookahead.getType() != TokenType.RPARENTHESIS) {
 			element();
 		}
 	}
@@ -79,11 +79,11 @@ public class SchemeParser extends Parser {
 	public void quoted() {
 		Entry save = currententry;
 		
-		currententry = new Entry(new Token(SchemeLexer.LPARENTHESIS, "("));
-		match(SchemeLexer.QUOTE);
+		currententry = new Entry(new Token(TokenType.LPARENTHESIS, "("));
+		match(TokenType.QUOTE);
 		switch(lookahead.getType()) {
-		case SchemeLexer.LPARENTHESIS: liste(); break;
-		case SchemeLexer.ELEMENT: element(); break;
+		case LPARENTHESIS: liste(); break;
+		case ELEMENT: element(); break;
 		}
 		if (save != null) {
 			save.addChildren(currententry);
@@ -98,9 +98,9 @@ public class SchemeParser extends Parser {
 		Entry save = currententry;
 
 		currententry = new Entry(lookahead);
-		match(SchemeLexer.LPARENTHESIS);
+		match(TokenType.LPARENTHESIS);
 		elements();
-		match(SchemeLexer.RPARENTHESIS);
+		match(TokenType.RPARENTHESIS);
 		if (save != null) {
 			save.addChildren(currententry);
 			currententry = save;
@@ -111,16 +111,16 @@ public class SchemeParser extends Parser {
 
 	public void form() {
 		switch (lookahead.getType()) {
-		case SchemeLexer.LPARENTHESIS:
+		case LPARENTHESIS:
 			liste();
 			break;
-		case SchemeLexer.ELEMENT:
+		case ELEMENT:
 			element();
 			break;
-		case SchemeLexer.NUMBER:
+		case NUMBER:
 		    element();
 		    break;
-		case SchemeLexer.EOF:
+		case EOF:
 			break;
 		default:
 			throw new RuntimeException("SchemeParser: invalid form; read " + lookahead);

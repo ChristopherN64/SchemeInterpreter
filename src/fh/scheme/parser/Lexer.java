@@ -52,7 +52,5 @@ public abstract class Lexer {
 	
 	
 	public abstract Token nextToken() throws IOException;
-	
-	public abstract String getTokenName(int type);
 
 }

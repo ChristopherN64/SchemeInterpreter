@@ -1,11 +1,11 @@
 package fh.scheme.parser;
 
 public class Token {
-	private int type;
+	private TokenType type;
 	private String text;
 	
 	
-	public Token(int type, String text) {
+	public Token(TokenType type, String text) {
 		super();
 		this.text = text;
 		this.type = type;
@@ -16,12 +16,12 @@ public class Token {
 		return text;
 	}
 	
-	public int getType() {
+	public TokenType getType() {
 		return type;
 	}
 	
 	public String toString() {
-		return "<'" + text + "', " + SchemeLexer.tokenNames[type] + ">";
+		return "<'" + text + "', " + type.name() + ">";
 	}
 	
 

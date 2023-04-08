@@ -8,11 +8,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        String source = "(define (last l)" +
-                "  (if (null? (cdr l))" +
-                "      (car l)" +
-                "      (last (cdr l)))" +
-                "  )";
+        String source = "(+ (+ 30 2) 10)";
         SchemeLexer sl = new SchemeLexer(new ByteArrayInputStream(source.getBytes()));
         SchemeParser sp = new SchemeParser(sl);
         List<Entry> entrys = sp.program();

@@ -5,19 +5,6 @@ import java.io.InputStream;
 
 public class SchemeLexer extends Lexer {
 
-	public static final int EOF = 1;
-	public static final int ELEMENT = 2;
-	public static final int LPARENTHESIS = 3;
-	public static final int RPARENTHESIS = 4;
-	public static final int QUOTE = 5;
-	public static final int NUMBER = 6;
-	public static final int BOOLEAN = 7;
-	public static final int STRING = 8;
-	public static final int OPERATOR = 9;
-
-	public static String[] tokenNames = { "n/a", "<EOF>", "ELEMENT", "LPARENTHESIS", "RPARENTHESIS", "QUOTE", "NUMBER",
-			"BOOLEAN", "STRING", "OPERATOR" };
-
 	public SchemeLexer(InputStream input) {
 		super(input);
 	}
@@ -55,7 +42,7 @@ public class SchemeLexer extends Lexer {
 		} while (!eof && isLetter() && !isSeperator());
 		Token result = null;
 
-		result = new Token(ELEMENT, sb.toString());
+		result = new Token(TokenType.ELEMENT, sb.toString());
 
 		return result;
 	}
@@ -68,7 +55,7 @@ public class SchemeLexer extends Lexer {
 			consume();
 		} while (!eof && Character.isDigit(c));
 
-		return new Token(NUMBER, sb.toString());
+		return new Token(TokenType.NUMBER, sb.toString());
 	}
 
 	protected Token nextOperator() throws IOException {
@@ -79,7 +66,7 @@ public class SchemeLexer extends Lexer {
 			consume();
 		} while (!eof && isOperator());
 
-		return new Token(OPERATOR, sb.toString());
+		return new Token(TokenType.OPERATOR, sb.toString());
 	}
 
 	protected Token nextBoolean() throws IOException {
@@ -89,7 +76,7 @@ public class SchemeLexer extends Lexer {
 		sb.append(c);
 		consume();
 
-		return new Token(BOOLEAN, sb.toString());
+		return new Token(TokenType.BOOLEAN, sb.toString());
 	}
 
 	protected Token nextString() throws IOException {
@@ -100,7 +87,7 @@ public class SchemeLexer extends Lexer {
 			consume();
 		}
 		consume();
-		return new Token(STRING, sb.toString());
+		return new Token(TokenType.STRING, sb.toString());
 	}
 
 	public Token nextToken() throws IOException {
@@ -114,13 +101,13 @@ public class SchemeLexer extends Lexer {
 				continue;
 			case '(':
 				consume();
-				return new Token(LPARENTHESIS, "(");
+				return new Token(TokenType.LPARENTHESIS, "(");
 			case ')':
 				consume();
-				return new Token(RPARENTHESIS, ")");
+				return new Token(TokenType.RPARENTHESIS, ")");
 			case '\'':
 				consume();
-				return new Token(QUOTE, "'");
+				return new Token(TokenType.QUOTE, "'");
 			default:
 				if (isStartLetter()) {
 					return nextVariable();
@@ -139,11 +126,6 @@ public class SchemeLexer extends Lexer {
 				}
 			}
 		}
-		return new Token(EOF, "EOF");
+		return new Token(TokenType.EOF, "EOF");
 	}
-
-	public String getTokenName(int type) {
-		return tokenNames[type];
-	}
-
 }
