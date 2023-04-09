@@ -24,4 +24,22 @@ public class ASTPrinter {
             }
         }
     }
+
+    public static String getEntryAsString(Entry e) {
+        String ret = "";
+        if (e != null) {
+            if (e.getChildren() != null) {
+                List<Entry> children = e.getChildren();
+                for (int i = 0; i < children.size(); i++) {
+                    Entry g = children.get(i);
+                    ret = ret+g.getToken().getText();
+                    if (g.getChildren() != null) {
+                        Formatter f = new Formatter();
+                        ret = ret+getEntryAsString(g);
+                    }
+                }
+            }
+        }
+        return ret;
+    }
 }

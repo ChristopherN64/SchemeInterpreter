@@ -11,6 +11,13 @@ public class Token {
 		this.type = type;
 	}
 
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	public void setType(TokenType type) {
+		this.type = type;
+	}
 
 	public String getText() {
 		return text;
