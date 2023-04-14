@@ -6,7 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list"});
+    public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr"});
     public static String eval(Expression expression, Environment env) {
         List<Entry> entries = new LinkedList<>();
         if(expression.getEntry().getToken().getType()==TokenType.LPARENTHESIS){
@@ -37,6 +38,18 @@ public class Interpreter {
         if (isQuoted(entries.get(0)))
             return ASTPrinter.getEntryAsString(entries.get(1)) + ")";
 
+        if (isList(entries.get(0))) {
+            expression.getEntry().getChildren().get(1).getToken().setText(eval(new Expression(entries.get(1)),env));
+            expression.getEntry().getChildren().get(2).getToken().setText(eval(new Expression(entries.get(2)),env));
+            return "("+expression.getEntry().getChildren().get(1).getToken().getText()+" "+expression.getEntry().getChildren().get(2).getToken().getText()+")";
+        }
+
+        if (entries.get(0).getToken().getText().equals("car"))
+            return eval(new Expression(entries.get(1).getChildren().get(1)),env);
+
+        if (entries.get(0).getToken().getText().equals("cdr"))
+            return eval(new Expression(entries.get(1).getChildren().get(2)),env);
+
         //Application?
         if (isApplication(entries.get(0))) {
             List<Entry> arguments = entries.subList(1, entries.size());
@@ -56,8 +69,12 @@ public class Interpreter {
         return apply(procedure, arguments,environment);
     }
 
+    private static boolean isList(Entry entry) {
+        return entry.getToken().getText().equals("list") || entry.getToken().getText().equals("cons");
+    }
+
     private static boolean isApplication(Entry entry) {
-        return entry.getToken().getType() == TokenType.OPERATOR || entry.getToken().getText().equals("cons");
+        return entry.getToken().getType() == TokenType.OPERATOR || PRIMITIVE_PROCEDURES.contains(entry.getToken().getText());
     }
 
     private static boolean isIfCondition(Entry entry) {
@@ -98,15 +115,6 @@ public class Interpreter {
     }
 
     private static String applyPrimitive(Procedure procedure, List<Entry> arguments) {
-        if (procedure.operator.equals("cons"))
-            return "(" + arguments.get(0).getToken().getText() +" "+ arguments.get(1).getToken().getText()+ ")";
-
-        if (procedure.operator.equals("car"))
-            return arguments.get(0).getToken().getText();
-
-        if (procedure.operator.equals("cdr"))
-            return arguments.get(1).getToken().getText();
-
         if (procedure.operator.equals("*"))
             return arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString();
         if (procedure.operator.equals("/"))
