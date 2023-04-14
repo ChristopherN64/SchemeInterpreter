@@ -34,6 +34,13 @@ public class Interpreter {
             return eval(new Expression(entries.get(3)),env);
         }
 
+        if(isCondCondition(entries.get(0))){
+            for(int i=1; i<entries.size();i++){
+                if(eval(new Expression(entries.get(i).getChildren().get(0)),env).equals("#t")) return eval(new Expression(entries.get(i).getChildren().get(1)),env);
+            }
+            return "";
+        }
+
         //quoted?
         if (isQuoted(entries.get(0)))
             return ASTPrinter.getEntryAsString(entries.get(1)) + ")";
@@ -79,6 +86,10 @@ public class Interpreter {
 
     private static boolean isIfCondition(Entry entry) {
         return entry.getToken().getText().equals("if");
+    }
+
+    private static boolean isCondCondition(Entry entry) {
+        return entry.getToken().getText().equals("cond");
     }
 
     private static boolean isQuoted(Entry entry) {
