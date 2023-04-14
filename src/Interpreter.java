@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons"});
     public static String eval(Expression expression, Environment env) {
         List<Entry> entries = new LinkedList<>();
         if(expression.getEntry().getToken().getType()==TokenType.LPARENTHESIS){
@@ -22,7 +22,7 @@ public class Interpreter {
         //definition?
         if (isDefinition(entries.get(0))) {
             env.variables.put(entries.get(1).getToken().getText(), eval(new Expression(entries.get(2)),env));
-            return "";
+            return "Saved!";
         }
 
         //variable?
@@ -30,21 +30,39 @@ public class Interpreter {
 
         //quoted?
         if (isQuoted(entries.get(0)))
-            return ASTPrinter.getEntryAsString(entries.get(0)).substring(1) + ")";
+            return ASTPrinter.getEntryAsString(entries.get(1)) + ")";
 
         //Application?
         if (isApplication(entries.get(0))) {
+            List<Entry> arguments = entries.subList(1, entries.size());
+            arguments.forEach((arg) -> {
+                arg.getToken().setText(eval(new Expression(arg), env));
+                arg.getToken().setType(TokenType.NUMBER);
+            });
             return apply(new Procedure(entries.get(0)),
-                    entries.subList(1, entries.size()),
+                    arguments,
                     env);
         }
-
-
         return null;
     }
 
+    public static String apply(Procedure procedure, List<Entry> arguments,Environment environment) {
+        if (primitiveProcedure(procedure, arguments)) return applyPrimitive(procedure, arguments);
+        return apply(procedure, arguments,environment);
+    }
+
+
+    private static boolean isPair(List<Entry> entries) {
+        if(entries.size() == 2 && entries.get(0).getToken().getType() == TokenType.NUMBER && entries.get(1).getToken().getType() == TokenType.NUMBER) return true;
+        return false;
+    }
+
+    private static boolean isCons(Entry entry) {
+        return entry.getToken().getText().equals("cons");
+    }
+
     private static boolean isApplication(Entry entry) {
-        return entry.getToken().getType() == TokenType.OPERATOR;
+        return entry.getToken().getType() == TokenType.OPERATOR || entry.getToken().getText().equals("cons");
     }
 
     private static boolean isQuoted(Entry entry) {
@@ -75,20 +93,15 @@ public class Interpreter {
         return env.variables.get(entry.getToken().getText());
     }
 
-    public static String apply(Procedure procedure, List<Entry> arguments,Environment environment) {
-        if (primitiveProcedure(procedure, arguments)) return applyPrimitive(procedure, arguments);
-        arguments.forEach((arg) -> {
-            arg.getToken().setText(eval(new Expression(arg), environment));
-            arg.getToken().setType(TokenType.NUMBER);
-        });
-        return apply(procedure, arguments,environment);
-    }
 
     private static boolean primitiveProcedure(Procedure procedure, List<Entry> arguments) {
         return procedure.primitiveProcedure() && arguments.stream().allMatch((arg) -> arg.getToken().getType() == TokenType.NUMBER);
     }
 
     private static String applyPrimitive(Procedure procedure, List<Entry> arguments) {
+        if (procedure.operator.equals("cons"))
+            return "(" + arguments.get(0).getToken().getText() +" "+ arguments.get(1).getToken().getText()+ ")";
+
         if (procedure.operator.equals("*"))
             return arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString();
         if (procedure.operator.equals("/"))

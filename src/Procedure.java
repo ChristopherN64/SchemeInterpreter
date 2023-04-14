@@ -3,7 +3,7 @@ import fh.scheme.parser.Entry;
 import java.util.List;
 
 public class Procedure {
-    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"+", "-", "*", "/","<","<=",">",">=","=",});
+    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"+", "-", "*", "/","<","<=",">",">=","=","cons"});
     public Entry entry;
     public String operator;
 
