@@ -13,7 +13,7 @@ public class Main {
     private static Environment environment;
     public static void main(String[] args) throws IOException {
         //Tests
-        runTests();
+        //runTests();
 
         environment = new Environment();
         while (true) {
@@ -51,6 +51,10 @@ public class Main {
         if(!processInput("(cons 1 (cons 2 var))").equals("(1 (2 12))")) System.out.println(errMsg);
         if(!processInput("(car (cons 2 3))").equals("2")) System.out.println(errMsg);
         if(!processInput("(cdr (cons 2 3))").equals("3")) System.out.println(errMsg);
+
+        if(!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42")) System.out.println(errMsg);
+        if(!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
+        if(!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
         environment = new Environment();
     }
 
