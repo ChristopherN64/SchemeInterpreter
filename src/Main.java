@@ -58,6 +58,13 @@ public class Main {
         if(!processInput("(cons 1 (cons 2 var))").equals("(1 (2 12))")) System.out.println(errMsg);
         if(!processInput("(car (cons 2 3))").equals("2")) System.out.println(errMsg);
         if(!processInput("(cdr (cons 2 3))").equals("3")) System.out.println(errMsg);
+        if(!processInput("(define varList (cons 2 3))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(car varList)").equals("2")) System.out.println(errMsg);
+        if(!processInput("(cdr varList)").equals("3")) System.out.println(errMsg);
+        if(!processInput("(define varListDeepCar (cons (cons 1 2) 3))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(car varListDeepCar)").equals("(1 2)")) System.out.println(errMsg);
+        if(!processInput("(define varListDeepCdr (cons 1 (cons 2 3)))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(cdr varListDeepCdr)").equals("(2 3)")) System.out.println(errMsg);
 
         //if and cond
         if(!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);

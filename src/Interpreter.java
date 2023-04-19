@@ -51,11 +51,21 @@ public class Interpreter {
             return "("+expression.getEntry().getChildren().get(1).getToken().getText()+" "+expression.getEntry().getChildren().get(2).getToken().getText()+")";
         }
 
-        if (entries.get(0).getToken().getText().equals("car"))
+        if (entries.get(0).getToken().getText().equals("car")) {
+            Entry var = lookupVarValue(entries.get(1),env);
+            if(var!=null){
+                return eval(new Expression(var.getChildren().get(1)),env);
+            }
             return eval(new Expression(entries.get(1).getChildren().get(1)),env);
+        }
 
-        if (entries.get(0).getToken().getText().equals("cdr"))
+        if (entries.get(0).getToken().getText().equals("cdr")) {
+            Entry var = lookupVarValue(entries.get(1),env);
+            if(var!=null){
+                return eval(new Expression(var.getChildren().get(2)),env);
+            }
             return eval(new Expression(entries.get(1).getChildren().get(2)),env);
+        }
 
         //Application?
         if (isApplication(entries.get(0))) {
