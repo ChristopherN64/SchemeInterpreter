@@ -26,14 +26,18 @@ public class Main {
     private static void runTests() {
         String errMsg = "ERROR in Test";
         environment = new Environment();
+        //Self evaluating
         if(!processInput("7").equals("7")) System.out.println(errMsg);
 
+        //Variable
         if(!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if(!processInput("var").equals("12")) System.out.println(errMsg);
 
+        //Primitive Functions
         if(!processInput("(+ 1 2)").equals("3")) System.out.println(errMsg);
         if(!processInput("(+ (+ 1 var) (* 10 5))").equals("63")) System.out.println(errMsg);
 
+        //comparison operators
         if(!processInput("(#t)").equals("#t")) System.out.println(errMsg);
         if(!processInput("(#f)").equals("#f")) System.out.println(errMsg);
         if(!processInput("(< 1 2)").equals("#t")) System.out.println(errMsg);
@@ -42,18 +46,22 @@ public class Main {
         if(!processInput("(>= 1 2)").equals("#f")) System.out.println(errMsg);
         if(!processInput("(= 12 var)").equals("#t")) System.out.println(errMsg);
 
+        //quote
         if(!processInput("(quote (+ 1 2))").equals("( + 1 2 )")) System.out.println(errMsg);
         if(!processInput("'(+ 1 2)").equals("( + 1 2 )")) System.out.println(errMsg);
         if(!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
         if(!processInput("quoteVar").equals("( + 12 3 )")) System.out.println(errMsg);
 
-
+        //Lists
         if(!processInput("(cons 1 2)").equals("(1 2)")) System.out.println(errMsg);
         if(!processInput("(cons 1 (cons 2 3))").equals("(1 (2 3))")) System.out.println(errMsg);
         if(!processInput("(cons 1 (cons 2 var))").equals("(1 (2 12))")) System.out.println(errMsg);
         if(!processInput("(car (cons 2 3))").equals("2")) System.out.println(errMsg);
         if(!processInput("(cdr (cons 2 3))").equals("3")) System.out.println(errMsg);
 
+        //if and cond
+        if(!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);
+        if(!processInput("(if (> 1 2) 1234 5678)").equals("5678")) System.out.println(errMsg);
         if(!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42")) System.out.println(errMsg);
         if(!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
         if(!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123")) System.out.println(errMsg);
