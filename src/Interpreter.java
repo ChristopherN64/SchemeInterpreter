@@ -1,5 +1,6 @@
 import fh.scheme.parser.ASTPrinter;
 import fh.scheme.parser.Entry;
+import fh.scheme.parser.Token;
 import fh.scheme.parser.TokenType;
 
 import java.util.LinkedList;
@@ -8,7 +9,7 @@ import java.util.List;
 public class Interpreter {
     public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list","quote","'"});
     public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr"});
-    public static String eval(Expression expression, Environment env) {
+    public static Entry eval(Expression expression, Environment env) {
         List<Entry> entries = new LinkedList<>();
         if(expression.getEntry().getToken().getType()==TokenType.LPARENTHESIS){
             entries.addAll(expression.getEntry().getChildren());
@@ -18,75 +19,66 @@ public class Interpreter {
         }
 
         //Self Evaluating?
-        if(entries.size()==1 && isSelfEvaluating(entries.get(0))) return entries.get(0).getToken().getText();
+        if(entries.size()==1 && isSelfEvaluating(entries.get(0))) return entries.get(0);
 
         //definition?
         if(isDefinition(entries.get(0))) {
             env.variables.put(entries.get(1).getToken().getText(), entries.get(2));
-            return "Saved!";
+            return new Entry(new Token(TokenType.STRING,"Saved!"));
         }
 
         //variable?
         if(isVariable(entries.get(0))) return eval(new Expression(lookupVarValue(entries.get(0), env)),env);
 
         if(isIfCondition(entries.get(0))){
-            if(eval(new Expression(entries.get(1)),env).equals("#t")) return eval(new Expression(entries.get(2)),env);
+            if(eval(new Expression(entries.get(1)),env).getToken().getText().equals("#t")) return eval(new Expression(entries.get(2)),env);
             return eval(new Expression(entries.get(3)),env);
         }
 
         if(isCondCondition(entries.get(0))){
             for(int i=1; i<entries.size();i++){
-                if(eval(new Expression(entries.get(i).getChildren().get(0)),env).equals("#t")) return eval(new Expression(entries.get(i).getChildren().get(1)),env);
+                if(eval(new Expression(entries.get(i).getChildren().get(0)),env).getToken().getText().equals("#t")) return eval(new Expression(entries.get(i).getChildren().get(1)),env);
             }
-            return "";
+            return new Entry(new Token(TokenType.STRING,""));
         }
 
         //quoted?
         if (isQuoted(entries.get(0)))
-            return ASTPrinter.getEntryAsString(entries.get(1)) + ")";
+            return new Entry(new Token(TokenType.STRING,ASTPrinter.getEntryAsString(entries.get(1)) + ")"));
 
         if (isList(entries.get(0))) {
-            expression.getEntry().getChildren().get(1).getToken().setText(eval(new Expression(entries.get(1)),env));
-            expression.getEntry().getChildren().get(2).getToken().setText(eval(new Expression(entries.get(2)),env));
-            return "("+expression.getEntry().getChildren().get(1).getToken().getText()+" "+expression.getEntry().getChildren().get(2).getToken().getText()+")";
+            expression.getEntry().getChildren().set(1, eval(new Expression(entries.get(1)),env));
+            expression.getEntry().getChildren().set(2, eval(new Expression(entries.get(2)),env));
+            return expression.getEntry();
         }
 
         if (entries.get(0).getToken().getText().equals("car")) {
-            Entry var = lookupVarValue(entries.get(1),env);
-            if(var!=null){
-                return eval(new Expression(var.getChildren().get(1)),env);
-            }
-            return eval(new Expression(entries.get(1).getChildren().get(1)),env);
+            Entry list = eval(new Expression(entries.get(1)),env);
+            return eval(new Expression(list.getChildren().get(1)),env);
         }
 
         if (entries.get(0).getToken().getText().equals("cdr")) {
-            Entry var = lookupVarValue(entries.get(1),env);
-            if(var!=null){
-                return eval(new Expression(var.getChildren().get(2)),env);
-            }
-            return eval(new Expression(entries.get(1).getChildren().get(2)),env);
+            Entry list = eval(new Expression(entries.get(1)),env);
+            return eval(new Expression(list.getChildren().get(2)),env);
         }
 
         //Application?
         if (isApplication(entries.get(0))) {
             List<Entry> arguments = entries.subList(1, entries.size());
-            arguments.forEach((arg) -> {
-                arg.getToken().setText(eval(new Expression(arg), env));
-                arg.getToken().setType(TokenType.NUMBER);
-            });
+            arguments.replaceAll(entry -> eval(new Expression(entry), env));
             return apply(new Procedure(entries.get(0)),
                     arguments,
                     env);
         }
-        return "EVAL - ERROR";
+        return StringToNumberEntry("EVAL - ERROR");
     }
 
-    public static String apply(Procedure procedure, List<Entry> arguments,Environment environment) {
+    public static Entry apply(Procedure procedure, List<Entry> arguments,Environment environment) {
         if (primitiveProcedure(procedure, arguments)) return applyPrimitive(procedure, arguments);
         return apply(procedure, arguments,environment);
     }
 
-    private static boolean isList(Entry entry) {
+    public static boolean isList(Entry entry) {
         return entry.getToken().getText().equals("list") || entry.getToken().getText().equals("cons");
     }
 
@@ -135,28 +127,36 @@ public class Interpreter {
         return procedure.primitiveProcedure() && arguments.stream().allMatch((arg) -> arg.getToken().getType() == TokenType.NUMBER);
     }
 
-    private static String applyPrimitive(Procedure procedure, List<Entry> arguments) {
+    private static Entry applyPrimitive(Procedure procedure, List<Entry> arguments) {
         if (procedure.operator.equals("*"))
-            return arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString();
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString());
         if (procedure.operator.equals("/"))
-            return arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a / b).get().toString();
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a / b).get().toString());
         if (procedure.operator.equals("+"))
-            return arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a + b).get().toString();
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a + b).get().toString());
         if (procedure.operator.equals("-"))
-            return arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a - b).get().toString();
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a - b).get().toString());
 
         if (procedure.operator.equals(">"))
-            return Integer.parseInt(arguments.get(0).getToken().getText()) > Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f";
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) > Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f");
         if (procedure.operator.equals(">="))
-            return Integer.parseInt(arguments.get(0).getToken().getText()) >= Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f";
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) >= Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f");
         if (procedure.operator.equals("<"))
-            return Integer.parseInt(arguments.get(0).getToken().getText()) < Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f";
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) < Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f");
         if (procedure.operator.equals("<="))
-            return Integer.parseInt(arguments.get(0).getToken().getText()) <= Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f";
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) <= Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f");
         if (procedure.operator.equals("="))
-            return Integer.parseInt(arguments.get(0).getToken().getText()) == Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f";
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) == Integer.parseInt(arguments.get(1).getToken().getText()) ? "#t" : "#f");
 
-        return "";
+        return StringToNumberEntry("");
+    }
+
+    private static Entry StringToNumberEntry(String s){
+        return new Entry(new Token(TokenType.NUMBER,s));
+    }
+
+    private static Entry StringToBooleanEntry(String s){
+        return new Entry(new Token(TokenType.BOOLEAN,s));
     }
 
 }

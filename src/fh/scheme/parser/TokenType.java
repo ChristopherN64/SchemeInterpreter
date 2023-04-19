@@ -9,5 +9,6 @@ public enum TokenType {
     NUMBER,
     BOOLEAN,
     STRING,
-    OPERATOR
+    OPERATOR,
+    LIST
 }
