@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list","quote","'"});
     public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr"});
     public static String eval(Expression expression, Environment env) {
         List<Entry> entries = new LinkedList<>();
@@ -22,12 +22,12 @@ public class Interpreter {
 
         //definition?
         if(isDefinition(entries.get(0))) {
-            env.variables.put(entries.get(1).getToken().getText(), eval(new Expression(entries.get(2)),env));
+            env.variables.put(entries.get(1).getToken().getText(), entries.get(2));
             return "Saved!";
         }
 
         //variable?
-        if(isVariable(entries.get(0))) return lookupVarValue(entries.get(0), env);
+        if(isVariable(entries.get(0))) return eval(new Expression(lookupVarValue(entries.get(0), env)),env);
 
         if(isIfCondition(entries.get(0))){
             if(eval(new Expression(entries.get(1)),env).equals("#t")) return eval(new Expression(entries.get(2)),env);
@@ -93,7 +93,7 @@ public class Interpreter {
     }
 
     private static boolean isQuoted(Entry entry) {
-        return entry.getToken().getType() == TokenType.QUOTE;
+        return entry.getToken().getType() == TokenType.QUOTE || entry.getToken().getText().equals("quote");
     }
 
     private static boolean isVariable(Entry entry) {
@@ -116,7 +116,7 @@ public class Interpreter {
         return entry.getToken().getType()==TokenType.NUMBER;
     }
 
-    private static String lookupVarValue(Entry entry, Environment env) {
+    private static Entry lookupVarValue(Entry entry, Environment env) {
         return env.variables.get(entry.getToken().getText());
     }
 

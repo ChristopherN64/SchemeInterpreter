@@ -107,7 +107,7 @@ public class SchemeLexer extends Lexer {
 				return new Token(TokenType.RPARENTHESIS, ")");
 			case '\'':
 				consume();
-				return new Token(TokenType.QUOTE, "'");
+				return new Token(TokenType.QUOTE, "quote");
 			default:
 				if (isStartLetter()) {
 					return nextVariable();

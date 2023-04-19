@@ -42,6 +42,8 @@ public class Main {
         if(!processInput("(>= 1 2)").equals("#f")) System.out.println(errMsg);
         if(!processInput("(= 12 var)").equals("#t")) System.out.println(errMsg);
 
+        if(!processInput("(quote (+ 1 2))").equals("( + 1 2 )")) System.out.println(errMsg);
+        if(!processInput("'(+ 1 2)").equals("( + 1 2 )")) System.out.println(errMsg);
         if(!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
         if(!processInput("quoteVar").equals("( + 12 3 )")) System.out.println(errMsg);
 

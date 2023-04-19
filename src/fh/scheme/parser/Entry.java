@@ -21,6 +21,7 @@ public class Entry {
 	public Entry(Token token) {
 		this();
 		this.token = token;
+		leaf = token.getType() != TokenType.LPARENTHESIS;
 	}
 	
 	public boolean isLeaf() {

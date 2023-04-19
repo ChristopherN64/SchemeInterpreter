@@ -1,7 +1,9 @@
+import fh.scheme.parser.Entry;
+
 import java.util.HashMap;
 
 public class Environment {
-    HashMap<String,String> variables;
+    HashMap<String, Entry> variables;
     Environment parent;
     Environment child;
 
@@ -25,7 +27,7 @@ public class Environment {
         this.child = child;
     }
 
-    public HashMap<String, String> getVariables() {
+    public HashMap<String, Entry> getVariables() {
         return variables;
     }
 }
