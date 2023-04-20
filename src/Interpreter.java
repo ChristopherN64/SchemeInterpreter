@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list","quote","'"});
-    public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list","quote","'","length"});
+    public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr","length"});
     public static Entry eval(Expression expression, Environment env) {
         List<Entry> entries = new LinkedList<>();
         if(expression.getEntry().getToken().getType()==TokenType.LPARENTHESIS){
@@ -139,13 +139,23 @@ public class Interpreter {
         return procedure.primitiveProcedure();
     }
 
-    private static Entry applyPrimitive(Procedure procedure, List<Entry> arguments,Environment env) {
-        if (procedure.operator.equals("car")) {
-            return eval(new Expression(arguments.get(0).getChildren().get(1)),env);
+    public static int getListLength(Entry list,int length){
+        if(list.getChildren()!=null) {
+            if(list.getChildren().size()==1) return 0;
+            if(list.getChildren().size()==2) return 1;
+            return getListLength(list.getChildren().get(1),length)+getListLength(list.getChildren().get(2),length);
         }
+        else return length;
+    }
 
-        if (procedure.operator.equals("cdr")) {
+    private static Entry applyPrimitive(Procedure procedure, List<Entry> arguments,Environment env) {
+        if (procedure.operator.equals("car"))
+            return eval(new Expression(arguments.get(0).getChildren().get(1)),env);
+        if (procedure.operator.equals("cdr"))
             return eval(new Expression(arguments.get(0).getChildren().get(2)),env);
+
+        if(procedure.operator.equals("length")){
+            return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0),1)));
         }
 
         if (procedure.operator.equals("*"))

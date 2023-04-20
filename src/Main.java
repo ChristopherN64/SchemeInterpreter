@@ -83,6 +83,23 @@ public class Main {
         if(!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
         if(!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123")) System.out.println(errMsg);
 
+        //Length
+        if(!processInput("(define l (cons 1 (cons 2 (cons 3 4))))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(length l)").equals("4")) System.out.println(errMsg);
+        if(!processInput("(define l (list 1 2 3 4))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(length l)").equals("4")) System.out.println(errMsg);
+        if(!processInput("(define l (list 1 2 3 4 5))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(length l)").equals("5")) System.out.println(errMsg);
+        if(!processInput("(define l (list 1))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(length l)").equals("1")) System.out.println(errMsg);
+        if(!processInput("(define l (list ))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(length l)").equals("0")) System.out.println(errMsg);
+
+        if(!processInput("(define l (list 1 2 3))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(define u (list 4 5))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(define x (list l u))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(length x)").equals("5")) System.out.println(errMsg);
+
 
         environment = new Environment();
     }
