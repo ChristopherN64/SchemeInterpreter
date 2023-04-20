@@ -7,8 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list","quote","'","length","null?"});
-    public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr","length","null?"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","list","quote","'"});
     public static Entry eval(Expression expression, Environment env) {
         List<Entry> entries = new LinkedList<>();
         if(expression.getEntry().getToken().getType()==TokenType.LPARENTHESIS){
@@ -99,7 +98,7 @@ public class Interpreter {
     }
 
     private static boolean isApplication(Entry entry) {
-        return entry.getToken().getType() == TokenType.OPERATOR || PRIMITIVE_PROCEDURES.contains(entry.getToken().getText());
+        return entry.getToken().getType() == TokenType.OPERATOR || Procedure.PRIMITIVE_OPERATORS.contains(entry.getToken().getText());
     }
 
     private static boolean isIfCondition(Entry entry) {
@@ -115,7 +114,9 @@ public class Interpreter {
     }
 
     private static boolean isVariable(Entry entry) {
-        return entry.getToken().getType() == TokenType.ELEMENT && !KEYWORDS.contains(entry.getToken().getText());
+        return entry.getToken().getType() == TokenType.ELEMENT
+                && !KEYWORDS.contains(entry.getToken().getText())
+                && !Procedure.PRIMITIVE_OPERATORS.contains(entry.getToken().getText());
     }
 
     private static boolean isDefinition(Entry entry) {
@@ -158,13 +159,11 @@ public class Interpreter {
         if (procedure.operator.equals("cdr"))
             return eval(new Expression(arguments.get(0).getChildren().get(2)),env);
 
-        if(procedure.operator.equals("length")){
+        if(procedure.operator.equals("length"))
             return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0),1)));
-        }
 
-        if(procedure.operator.equals("null?")){
+        if(procedure.operator.equals("null?"))
             return StringToBooleanEntry("null".equals(arguments.get(0).getToken().getText()) ? "#t" : "#f");
-        }
 
         if (procedure.operator.equals("*"))
             return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString());
