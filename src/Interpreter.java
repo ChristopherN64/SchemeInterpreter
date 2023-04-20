@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list","quote","'","length"});
-    public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr","length"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","list","cond","if","cons","car","cdr","list","quote","'","length","null?"});
+    public static List<String> PRIMITIVE_PROCEDURES = List.of(new String[]{"car","cdr","length","null?"});
     public static Entry eval(Expression expression, Environment env) {
         List<Entry> entries = new LinkedList<>();
         if(expression.getEntry().getToken().getType()==TokenType.LPARENTHESIS){
@@ -28,7 +28,11 @@ public class Interpreter {
         }
 
         //variable?
-        if(isVariable(entries.get(0))) return eval(new Expression(lookupVarValue(entries.get(0), env)),env);
+        if(isVariable(entries.get(0))){
+            Entry ret = lookupVarValue(entries.get(0), env);
+            if(ret!=null) return eval(new Expression(ret),env);;
+            return StringToNumberEntry("null");
+        }
 
         if(isIfCondition(entries.get(0))){
             if(eval(new Expression(entries.get(1)),env).getToken().getText().equals("#t")) return eval(new Expression(entries.get(2)),env);
@@ -156,6 +160,10 @@ public class Interpreter {
 
         if(procedure.operator.equals("length")){
             return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0),1)));
+        }
+
+        if(procedure.operator.equals("null?")){
+            return StringToBooleanEntry("null".equals(arguments.get(0).getToken().getText()) ? "#t" : "#f");
         }
 
         if (procedure.operator.equals("*"))

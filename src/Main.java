@@ -100,6 +100,10 @@ public class Main {
         if(!processInput("(define x (list l u))").equals("Saved!")) System.out.println(errMsg);
         if(!processInput("(length x)").equals("5")) System.out.println(errMsg);
 
+        //null?
+        if(!processInput("(null? x)").equals("#f")) System.out.println(errMsg);
+        if(!processInput("p").equals("null")) System.out.println(errMsg);
+        if(!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
         environment = new Environment();
     }
