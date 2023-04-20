@@ -5,6 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Entry {
+	public void setToken(Token token) {
+		this.token = token;
+	}
+
 	private Token token;
 	private List<Entry> children;
 	private boolean leaf;
@@ -34,6 +38,10 @@ public class Entry {
 
 	public List< Entry> getChildren(){
 		return children;
+	}
+
+	public void setChildren(List<Entry> children) {
+		this.children = children;
 	}
 
 	public void addChildren(Entry child) {

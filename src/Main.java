@@ -69,6 +69,12 @@ public class Main {
         if(!processInput("(define treeVar (cons 1 varList))").equals("Saved!")) System.out.println(errMsg);
         if(!processInput("(car (cdr treeVar))").equals("2")) System.out.println(errMsg);
 
+        if(!processInput("(define x 3)").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(define l (list 1 2 x 4))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(car l)").equals("1")) System.out.println(errMsg);
+        if(!processInput("(cdr l)").equals("( 2 3 4 )")) System.out.println(errMsg);
+        if(!processInput("(car (cdr l))").equals("2")) System.out.println(errMsg);
+        if(!processInput("(cdr (cdr (cdr l)))").equals("4")) System.out.println(errMsg);
 
         //if and cond
         if(!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);
@@ -76,6 +82,8 @@ public class Main {
         if(!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42")) System.out.println(errMsg);
         if(!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
         if(!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123")) System.out.println(errMsg);
+
+
         environment = new Environment();
     }
 

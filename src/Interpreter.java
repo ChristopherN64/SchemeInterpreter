@@ -23,7 +23,7 @@ public class Interpreter {
 
         //definition?
         if(isDefinition(entries.get(0))) {
-            env.variables.put(entries.get(1).getToken().getText(), entries.get(2));
+            env.variables.put(entries.get(1).getToken().getText(), eval(new Expression(entries.get(2)),env));
             return StringToNumberEntry("Saved!");
         }
 
@@ -43,13 +43,19 @@ public class Interpreter {
         }
 
         //quoted?
-        //TODO move String mapping in Main
         if (isQuoted(entries.get(0)))
             return StringToNumberEntry(ASTPrinter.getEntryAsString(entries.get(1)) + ")");
 
         if (isList(entries.get(0))) {
-            expression.getEntry().getChildren().set(1, eval(new Expression(entries.get(1)),env));
-            expression.getEntry().getChildren().set(2, eval(new Expression(entries.get(2)),env));
+            for(int i=1; i<expression.getEntry().getChildren().size();i++){
+                expression.getEntry().getChildren().set(i, eval(new Expression(entries.get(i)),env));
+            }
+            //Rebuild list to nested cons
+            if(expression.getEntry().getChildren().size()>3){
+                Entry root = expression.getEntry().getChildren().get(1);
+                List<Entry> elements = expression.getEntry().getChildren().subList(2,expression.getEntry().getChildren().size());
+                return addElementToCons(root,elements);
+            }
             return expression.getEntry();
         }
 
@@ -62,6 +68,21 @@ public class Interpreter {
                     env);
         }
         return StringToNumberEntry("EVAL - ERROR");
+    }
+
+    public static Entry addElementToCons(Entry root, List<Entry> elements){
+        if(elements.size()==2)return createConsEntry(root,createConsEntry(elements.get(0),elements.get(1)));
+        return createConsEntry(root,addElementToCons(elements.get(0),elements.subList(1,elements.size())));
+    }
+
+    public static Entry createConsEntry(Entry child1, Entry child2){
+        Entry entry = new Entry();
+        entry.setToken(new Token(TokenType.LPARENTHESIS,"("));
+        entry.setChildren(new LinkedList<>());
+        entry.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"cons")));
+        entry.getChildren().add(child1);
+        entry.getChildren().add(child2);
+        return entry;
     }
 
     public static Entry apply(Procedure procedure, List<Entry> arguments,Environment environment) {
