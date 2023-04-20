@@ -24,7 +24,7 @@ public class Interpreter {
         //definition?
         if(isDefinition(entries.get(0))) {
             env.variables.put(entries.get(1).getToken().getText(), entries.get(2));
-            return new Entry(new Token(TokenType.STRING,"Saved!"));
+            return StringToNumberEntry("Saved!");
         }
 
         //variable?
@@ -39,27 +39,18 @@ public class Interpreter {
             for(int i=1; i<entries.size();i++){
                 if(eval(new Expression(entries.get(i).getChildren().get(0)),env).getToken().getText().equals("#t")) return eval(new Expression(entries.get(i).getChildren().get(1)),env);
             }
-            return new Entry(new Token(TokenType.STRING,""));
+            return StringToNumberEntry("");
         }
 
         //quoted?
+        //TODO move String mapping in Main
         if (isQuoted(entries.get(0)))
-            return new Entry(new Token(TokenType.STRING,ASTPrinter.getEntryAsString(entries.get(1)) + ")"));
+            return StringToNumberEntry(ASTPrinter.getEntryAsString(entries.get(1)) + ")");
 
         if (isList(entries.get(0))) {
             expression.getEntry().getChildren().set(1, eval(new Expression(entries.get(1)),env));
             expression.getEntry().getChildren().set(2, eval(new Expression(entries.get(2)),env));
             return expression.getEntry();
-        }
-
-        if (entries.get(0).getToken().getText().equals("car")) {
-            Entry list = eval(new Expression(entries.get(1)),env);
-            return eval(new Expression(list.getChildren().get(1)),env);
-        }
-
-        if (entries.get(0).getToken().getText().equals("cdr")) {
-            Entry list = eval(new Expression(entries.get(1)),env);
-            return eval(new Expression(list.getChildren().get(2)),env);
         }
 
         //Application?
@@ -74,7 +65,7 @@ public class Interpreter {
     }
 
     public static Entry apply(Procedure procedure, List<Entry> arguments,Environment environment) {
-        if (primitiveProcedure(procedure, arguments)) return applyPrimitive(procedure, arguments);
+        if (primitiveProcedure(procedure, arguments)) return applyPrimitive(procedure, arguments,environment);
         return apply(procedure, arguments,environment);
     }
 
@@ -124,10 +115,18 @@ public class Interpreter {
 
 
     private static boolean primitiveProcedure(Procedure procedure, List<Entry> arguments) {
-        return procedure.primitiveProcedure() && arguments.stream().allMatch((arg) -> arg.getToken().getType() == TokenType.NUMBER);
+        return procedure.primitiveProcedure();
     }
 
-    private static Entry applyPrimitive(Procedure procedure, List<Entry> arguments) {
+    private static Entry applyPrimitive(Procedure procedure, List<Entry> arguments,Environment env) {
+        if (procedure.operator.equals("car")) {
+            return eval(new Expression(arguments.get(0).getChildren().get(1)),env);
+        }
+
+        if (procedure.operator.equals("cdr")) {
+            return eval(new Expression(arguments.get(0).getChildren().get(2)),env);
+        }
+
         if (procedure.operator.equals("*"))
             return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString());
         if (procedure.operator.equals("/"))
