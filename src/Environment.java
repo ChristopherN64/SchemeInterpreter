@@ -8,7 +8,7 @@ public class Environment {
     Environment parent;
     Environment child;
 
-    public Environment(){
+    public Environment() {
         variables = new HashMap<>();
         procedure = new HashMap<>();
     }
