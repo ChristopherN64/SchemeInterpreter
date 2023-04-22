@@ -26,9 +26,10 @@ public class Interpreter {
         //definition?
         if (isDefinition(entries.get(0))) {
             //procedure
-            if (isProcedureDefinition(entries)) putProcedure(new Procedure(entries.get(1), entries.get(2)),env);
+            if (isProcedureDefinition(entries))
+                putProcedure(new Procedure(entries.get(1), entries.get(2)), env);
 
-            //Variable
+                //Variable
             else putVarValue(env, entries.get(1).getToken().getText(), entries.get(2));
             return StringToNumberEntry("Saved!");
         }
@@ -86,25 +87,26 @@ public class Interpreter {
                 }
                 return eval(procedure.getBody(), env);
             }
-            return apply(new Procedure(entry, entries.get(0)), env,arguments);
+            return apply(new Procedure(entry, entries.get(0)), env, arguments);
         }
         return StringToNumberEntry("EVAL - ERROR");
     }
 
-    public static Entry apply(Procedure procedure, Environment environment,List<Entry> arguments) {
-        if (primitiveProcedure(procedure)) return applyPrimitive(procedure, environment,arguments);
+    public static Entry apply(Procedure procedure, Environment environment, List<Entry> arguments) {
+        if (primitiveProcedure(procedure)) return applyPrimitive(procedure, environment, arguments);
         else {
             return eval(procedure.getBody(), environment);
         }
     }
 
     private static boolean isProcedureDefinition(List<Entry> entries) {
-        return entries.size()==3 && entries.get(1).getToken().getType().equals(TokenType.LPARENTHESIS);
+        return entries.size() == 3 && entries.get(1).getToken().getType().equals(TokenType.LPARENTHESIS);
     }
 
     private static void putProcedure(Procedure procedure, Environment environment) {
         environment.procedure.put(procedure.getName(), procedure);
     }
+
     private static void putVarValue(Environment env, String name, Entry value) {
         env.variables.put(name, eval(value, env));
     }
@@ -115,11 +117,16 @@ public class Interpreter {
         return createConsEntry(root, addElementToCons(elements.get(0), elements.subList(1, elements.size())));
     }
 
-    public static Entry createConsEntry(Entry child1, Entry child2) {
+    public static Entry createEmptyConsEntry() {
         Entry entry = new Entry();
         entry.setToken(new Token(TokenType.LPARENTHESIS, "("));
         entry.setChildren(new LinkedList<>());
         entry.getChildren().add(new Entry(new Token(TokenType.ELEMENT, "cons")));
+        return entry;
+    }
+
+    public static Entry createConsEntry(Entry child1, Entry child2) {
+        Entry entry = createEmptyConsEntry();
         entry.getChildren().add(child1);
         entry.getChildren().add(child2);
         return entry;
@@ -190,10 +197,16 @@ public class Interpreter {
 
     private static Entry applyPrimitive(Procedure procedure, Environment env, List<Entry> arguments) {
         String operator = procedure.getBody().getToken().getText();
-        if (operator.equals("car"))
+        if (operator.equals("car")) {
+            if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 2)
+                return StringToNumberEntry("null");
             return eval(arguments.get(0).getChildren().get(1), env);
-        if (operator.equals("cdr"))
+        }
+        if (operator.equals("cdr")) {
+            if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 3)
+                return StringToNumberEntry("null");
             return eval(arguments.get(0).getChildren().get(2), env);
+        }
 
         if (operator.equals("length"))
             return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0), 1)));

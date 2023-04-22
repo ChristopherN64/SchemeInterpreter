@@ -79,6 +79,8 @@ public class Main {
         if (!processInput("(define l (list 1 2 x 4))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(car l)").equals("1")) System.out.println(errMsg);
         if (!processInput("(cdr l)").equals("( 2 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(cdr (list 1))").equals("null")) System.out.println(errMsg);
+        if (!processInput("(car (list ))").equals("null")) System.out.println(errMsg);
         if (!processInput("(car (cdr l))").equals("2")) System.out.println(errMsg);
         if (!processInput("(cdr (cdr (cdr l)))").equals("4")) System.out.println(errMsg);
 
@@ -134,6 +136,7 @@ public class Main {
             SchemeParser sp = new SchemeParser(sl);
             List<Entry> entrys = sp.program();
             Entry ret = Interpreter.eval(entrys.get(0), environment);
+            if(ret==null) return "null";
             String out = ret.getToken().getText();
             if (isList(ret)) {
                 out = "( " + listToString(ret) + ")";
