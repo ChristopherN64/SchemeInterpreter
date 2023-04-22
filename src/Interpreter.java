@@ -3,6 +3,7 @@ import fh.scheme.parser.Entry;
 import fh.scheme.parser.Token;
 import fh.scheme.parser.TokenType;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,15 +23,24 @@ public class Interpreter {
 
         //definition?
         if(isDefinition(entries.get(0))) {
-            env.variables.put(entries.get(1).getToken().getText(), eval(new Expression(entries.get(2)),env));
+            //procedure
+            if(entries.get(1).getToken().getType().equals(TokenType.LPARENTHESIS)){
+                Procedure procedure = new Procedure(entries.get(2),
+                        entries.get(1),
+                        entries.get(2),
+                        new ArrayList<>());
+                env.procedure.put(procedure.name,procedure);
+            }
+            //Variable
+            else putVarValue(env,entries.get(1).getToken().getText(),entries.get(2));
             return StringToNumberEntry("Saved!");
         }
 
         //variable?
         if(isVariable(entries.get(0))){
-            Entry ret = lookupVarValue(entries.get(0), env);
-            if(ret!=null) return eval(new Expression(ret),env);;
-            return StringToNumberEntry("null");
+            Entry variable = lookupVarValue(entries.get(0), env);
+            if(variable!=null) return eval(new Expression(variable),env);
+            if(lookupProValue(entries.get(0),env)==null) return StringToNumberEntry("null");
         }
 
         if(isIfCondition(entries.get(0))){
@@ -63,14 +73,24 @@ public class Interpreter {
         }
 
         //Application?
-        if (isApplication(entries.get(0))) {
+        Procedure procedure = lookupProValue(entries.get(0),env);
+        if (isApplication(entries.get(0)) || procedure!=null) {
             List<Entry> arguments = entries.subList(1, entries.size());
             arguments.replaceAll(entry -> eval(new Expression(entry), env));
-            return apply(new Procedure(entries.get(0)),
-                    arguments,
-                    env);
+            if(procedure!=null){
+                //Put var Values in env
+                for(int i=0;i<arguments.size();i++){
+                    putVarValue(env,procedure.getVariables().get(i).getToken().getText(),arguments.get(i));
+                }
+                return eval(new Expression(procedure.getBody()),env);
+            }
+            return apply(new Procedure(entries.get(0),expression.getEntry(),entries.get(0),arguments), env);
         }
         return StringToNumberEntry("EVAL - ERROR");
+    }
+
+    private static void putVarValue(Environment env,String name,Entry value) {
+        env.variables.put(name, eval(new Expression(value),env));
     }
 
     public static Entry addElementToCons(Entry root, List<Entry> elements){
@@ -88,9 +108,11 @@ public class Interpreter {
         return entry;
     }
 
-    public static Entry apply(Procedure procedure, List<Entry> arguments,Environment environment) {
-        if (primitiveProcedure(procedure, arguments)) return applyPrimitive(procedure, arguments,environment);
-        return apply(procedure, arguments,environment);
+    public static Entry apply(Procedure procedure, Environment environment) {
+        if (primitiveProcedure(procedure)) return applyPrimitive(procedure,environment);
+        else {
+            return eval(new Expression(procedure.getBody()),environment);
+        }
     }
 
     public static boolean isList(Entry entry) {
@@ -139,8 +161,12 @@ public class Interpreter {
         return env.variables.get(entry.getToken().getText());
     }
 
+    private static Procedure lookupProValue(Entry entry, Environment env) {
+        return env.procedure.get(entry.getToken().getText());
+    }
 
-    private static boolean primitiveProcedure(Procedure procedure, List<Entry> arguments) {
+
+    private static boolean primitiveProcedure(Procedure procedure) {
         return procedure.primitiveProcedure();
     }
 
@@ -153,7 +179,8 @@ public class Interpreter {
         else return length;
     }
 
-    private static Entry applyPrimitive(Procedure procedure, List<Entry> arguments,Environment env) {
+    private static Entry applyPrimitive(Procedure procedure,Environment env) {
+        List<Entry> arguments = procedure.getArguments();
         if (procedure.operator.equals("car"))
             return eval(new Expression(arguments.get(0).getChildren().get(1)),env);
         if (procedure.operator.equals("cdr"))

@@ -105,6 +105,13 @@ public class Main {
         if(!processInput("p").equals("null")) System.out.println(errMsg);
         if(!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
+        //procedure
+        if(!processInput("(define (add x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(define (minus x y) (- x y))").equals("Saved!")) System.out.println(errMsg);
+        if(!processInput("(add 1 2)").equals("3")) System.out.println(errMsg);
+        if(!processInput("(add 5 6)").equals("11")) System.out.println(errMsg);
+        if(!processInput("(add (minus 4 2) 6)").equals("8")) System.out.println(errMsg);
+
         environment = new Environment();
     }
 
