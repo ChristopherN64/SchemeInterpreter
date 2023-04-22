@@ -28,17 +28,22 @@ public class Main {
         String errMsg = "ERROR in Test";
         environment = new Environment();
         //Self evaluating
+        System.out.println("\nSelf evaluating Tests");
         if (!processInput("7").equals("7")) System.out.println(errMsg);
+        if (!processInput("#t").equals("#t")) System.out.println(errMsg);
 
         //Variable
+        System.out.println("\nVariable Tests");
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("var").equals("12")) System.out.println(errMsg);
 
         //Primitive Functions
+        System.out.println("\nPrimitive functions Tests");
         if (!processInput("(+ 1 2)").equals("3")) System.out.println(errMsg);
         if (!processInput("(+ (+ 1 var) (* 10 5))").equals("63")) System.out.println(errMsg);
 
         //comparison operators
+        System.out.println("\ncomparison operators Tests");
         if (!processInput("(#t)").equals("#t")) System.out.println(errMsg);
         if (!processInput("(#f)").equals("#f")) System.out.println(errMsg);
         if (!processInput("(< 1 2)").equals("#t")) System.out.println(errMsg);
@@ -48,12 +53,14 @@ public class Main {
         if (!processInput("(= 12 var)").equals("#t")) System.out.println(errMsg);
 
         //quote
+        System.out.println("\nQuote Tests");
         if (!processInput("(quote (+ 1 2))").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("'(+ 1 2)").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("quoteVar").equals("( + 12 3 )")) System.out.println(errMsg);
 
         //Lists
+        System.out.println("\nList Tests");
         if (!processInput("(cons 1 2)").equals("( 1 2 )")) System.out.println(errMsg);
         if (!processInput("(cons 1 (cons 2 3))").equals("( 1 2 3 )")) System.out.println(errMsg);
         if (!processInput("(cons 1 (cons 2 var))").equals("( 1 2 12 )")) System.out.println(errMsg);
@@ -80,6 +87,7 @@ public class Main {
         if (!processInput("(cdr (cdr (cdr l)))").equals("4")) System.out.println(errMsg);
 
         //if and cond
+        System.out.println("\nIf / Cond Tests");
         if (!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);
         if (!processInput("(if (> 1 2) 1234 5678)").equals("5678")) System.out.println(errMsg);
         if (!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42")) System.out.println(errMsg);
@@ -87,6 +95,7 @@ public class Main {
         if (!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123")) System.out.println(errMsg);
 
         //Length
+        System.out.println("\nLength Tests");
         if (!processInput("(define l (cons 1 (cons 2 (cons 3 4))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(length l)").equals("4")) System.out.println(errMsg);
         if (!processInput("(define l (list 1 2 3 4))").equals("Saved!")) System.out.println(errMsg);
@@ -104,11 +113,13 @@ public class Main {
         if (!processInput("(length x)").equals("5")) System.out.println(errMsg);
 
         //null?
+        System.out.println("\nnull? Tests");
         if (!processInput("(null? x)").equals("#f")) System.out.println(errMsg);
         if (!processInput("p").equals("null")) System.out.println(errMsg);
         if (!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
         //procedure
+        System.out.println("\nprocedure Tests");
         if (!processInput("(define (add x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define (minus x y) (- x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(add 1 2)").equals("3")) System.out.println(errMsg);
@@ -117,6 +128,7 @@ public class Main {
         if (!processInput("(define pro (lambda (x y) (+ x y)))").equals("Saved!")) System.out.println(errMsg);
 
         //Lambda
+        System.out.println("\nlambda Tests");
         if (!processInput("(lambda (x y) (+ x y))").equals("procedure")) System.out.println(errMsg);
         if (!processInput("((lambda (x y) (+ x y)) 1 4)").equals("5")) System.out.println(errMsg);
         if (!processInput("(+ 100 ((lambda (x y) (+ x y)) 1 4))").equals("105")) System.out.println(errMsg);

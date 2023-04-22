@@ -30,10 +30,13 @@ public class Interpreter {
                 putProcedure(new Procedure(entries.get(1), entries.get(2)), env);
 
             //lambda
-            if(entries.get(2).getChildren().get(0).getToken().getText().equals("lambda")){
+            else if (entries.size() >= 3
+                    && entries.get(2).getChildren() != null
+                    && entries.get(2).getChildren().size() >= 1
+                    && entries.get(2).getChildren().get(0).getToken().getText().equals("lambda")) {
                 Procedure procedure = new Procedure(entries.get(2).getChildren().get(1).getChildren(), entries.get(2).getChildren().get(2));
                 procedure.setName(entries.get(1).getToken().getText());
-                putProcedure(procedure,env);
+                putProcedure(procedure, env);
             }
 
             //Variable
