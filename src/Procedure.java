@@ -3,7 +3,7 @@ import fh.scheme.parser.Entry;
 import java.util.List;
 
 public class Procedure {
-    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "cons", "length", "null?"});
+    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "cons", "length", "null?","lambda"});
     public Entry body;
 
     public String name;
@@ -12,6 +12,12 @@ public class Procedure {
     public Procedure(Entry definition, Entry body) {
         this.name = definition.getChildren().get(0).getToken().getText();
         this.variables = definition.getChildren().subList(1, definition.getChildren().size());
+        this.body = body;
+    }
+
+    public Procedure(List<Entry> variables, Entry body){
+        this.name = "lambda";
+        this.variables = variables;
         this.body = body;
     }
 
@@ -37,5 +43,9 @@ public class Procedure {
 
     public List<Entry> getVariables() {
         return variables;
+    }
+
+    public void setName(String name) {
+        this.name=name;
     }
 }

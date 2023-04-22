@@ -50,8 +50,7 @@ public class Main {
         //quote
         if (!processInput("(quote (+ 1 2))").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("'(+ 1 2)").equals("( + 1 2 )")) System.out.println(errMsg);
-        if (!processInput("(define quoteVar '(+ 12 3))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("quoteVar").equals("( + 12 3 )")) System.out.println(errMsg);
 
         //Lists
@@ -60,19 +59,15 @@ public class Main {
         if (!processInput("(cons 1 (cons 2 var))").equals("( 1 2 12 )")) System.out.println(errMsg);
         if (!processInput("(car (cons 2 3))").equals("2")) System.out.println(errMsg);
         if (!processInput("(cdr (cons 2 3))").equals("3")) System.out.println(errMsg);
-        if (!processInput("(define varList (cons 2 3))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define varList (cons 2 3))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(car varList)").equals("2")) System.out.println(errMsg);
         if (!processInput("(cdr varList)").equals("3")) System.out.println(errMsg);
-        if (!processInput("(define varListDeepCar (cons (cons 1 2) 3))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define varListDeepCar (cons (cons 1 2) 3))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(car varListDeepCar)").equals("( 1 2 )")) System.out.println(errMsg);
-        if (!processInput("(define varListDeepCdr (cons 1 (cons 2 3)))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define varListDeepCdr (cons 1 (cons 2 3)))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(cdr varListDeepCdr)").equals("( 2 3 )")) System.out.println(errMsg);
         if (!processInput("(car (cdr varListDeepCdr))").equals("2")) System.out.println(errMsg);
-        if (!processInput("(define treeVar (cons 1 varList))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define treeVar (cons 1 varList))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(car (cdr treeVar))").equals("2")) System.out.println(errMsg);
 
         if (!processInput("(define x 3)").equals("Saved!")) System.out.println(errMsg);
@@ -87,21 +82,16 @@ public class Main {
         //if and cond
         if (!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);
         if (!processInput("(if (> 1 2) 1234 5678)").equals("5678")) System.out.println(errMsg);
-        if (!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42"))
-            System.out.println(errMsg);
-        if (!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11"))
-            System.out.println(errMsg);
-        if (!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123"))
-            System.out.println(errMsg);
+        if (!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42")) System.out.println(errMsg);
+        if (!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
+        if (!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123")) System.out.println(errMsg);
 
         //Length
-        if (!processInput("(define l (cons 1 (cons 2 (cons 3 4))))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define l (cons 1 (cons 2 (cons 3 4))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(length l)").equals("4")) System.out.println(errMsg);
         if (!processInput("(define l (list 1 2 3 4))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(length l)").equals("4")) System.out.println(errMsg);
-        if (!processInput("(define l (list 1 2 3 4 5))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define l (list 1 2 3 4 5))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(length l)").equals("5")) System.out.println(errMsg);
         if (!processInput("(define l (list 1))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(length l)").equals("1")) System.out.println(errMsg);
@@ -119,13 +109,23 @@ public class Main {
         if (!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
         //procedure
-        if (!processInput("(define (add x y) (+ x y))").equals("Saved!"))
-            System.out.println(errMsg);
-        if (!processInput("(define (minus x y) (- x y))").equals("Saved!"))
-            System.out.println(errMsg);
+        if (!processInput("(define (add x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(define (minus x y) (- x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(add 1 2)").equals("3")) System.out.println(errMsg);
         if (!processInput("(add 5 6)").equals("11")) System.out.println(errMsg);
         if (!processInput("(add (minus 4 2) 6)").equals("8")) System.out.println(errMsg);
+        if (!processInput("(define pro (lambda (x y) (+ x y)))").equals("Saved!")) System.out.println(errMsg);
+
+        //Lambda
+        if (!processInput("(lambda (x y) (+ x y))").equals("procedure")) System.out.println(errMsg);
+        if (!processInput("((lambda (x y) (+ x y)) 1 4)").equals("5")) System.out.println(errMsg);
+        if (!processInput("(+ 100 ((lambda (x y) (+ x y)) 1 4))").equals("105")) System.out.println(errMsg);
+        if (!processInput("(define pro (lambda (x y) (+ x y)))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(pro 1 2)").equals("3")) System.out.println(errMsg);
+
+        //Complex functions
+        if (!processInput("(define (laenge l)(if (null? l) 0 (if (null? (cdr l)) 1 (+ 1 (laenge (cdr l))))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(laenge (list 2 4 3))").equals("3")) System.out.println(errMsg);
 
         environment = new Environment();
     }

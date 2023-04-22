@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define", "list", "cond", "if", "cons", "list", "quote", "'"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define", "list", "cond", "if", "cons", "list", "quote", "'", "lambda"});
     public static String T = "#t";
     public static String F = "#f";
 
@@ -29,7 +29,14 @@ public class Interpreter {
             if (isProcedureDefinition(entries))
                 putProcedure(new Procedure(entries.get(1), entries.get(2)), env);
 
-                //Variable
+            //lambda
+            if(entries.get(2).getChildren().get(0).getToken().getText().equals("lambda")){
+                Procedure procedure = new Procedure(entries.get(2).getChildren().get(1).getChildren(), entries.get(2).getChildren().get(2));
+                procedure.setName(entries.get(1).getToken().getText());
+                putProcedure(procedure,env);
+            }
+
+            //Variable
             else putVarValue(env, entries.get(1).getToken().getText(), entries.get(2));
             return StringToNumberEntry("Saved!");
         }
@@ -77,6 +84,14 @@ public class Interpreter {
 
         //Application?
         Procedure procedure = lookupProValue(entries.get(0), env);
+        if (entries.get(0).getToken().getText().equals("lambda")) {
+            return StringToNumberEntry("procedure");
+        }
+        if (entries.get(0).getChildren() != null
+                && entries.get(0).getChildren().size() > 0
+                && entries.get(0).getChildren().get(0).getToken().getText().equals("lambda")) {
+            procedure = new Procedure(entries.get(0).getChildren().get(1).getChildren(), entries.get(0).getChildren().get(2));
+        }
         if (isApplication(entries.get(0)) || procedure != null) {
             List<Entry> arguments = entries.subList(1, entries.size());
             arguments.replaceAll(e -> eval(e, env));
