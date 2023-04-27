@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define", "list", "cond", "if", "cons", "list", "quote", "'", "lambda"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round"});
     public static String T = "#t";
     public static String F = "#f";
 
@@ -30,7 +30,8 @@ public class Interpreter {
                 putProcedure(new Procedure(entries.get(1), entries.get(2)), env);
 
             //lambda
-            else if (entries.size() >= 3
+            else
+                if (entries.size() >= 3
                     && entries.get(2).getChildren() != null
                     && entries.get(2).getChildren().size() >= 1
                     && entries.get(2).getChildren().get(0).getToken().getText().equals("lambda")) {
@@ -231,6 +232,9 @@ public class Interpreter {
 
         if (operator.equals("null?"))
             return StringToBooleanEntry("null".equals(arguments.get(0).getToken().getText()) ? T : F);
+
+        if (operator.equals("round"))
+            return arguments.get(0);
 
         if (operator.equals("*"))
             return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString());

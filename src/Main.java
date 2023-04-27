@@ -118,6 +118,10 @@ public class Main {
         if (!processInput("p").equals("null")) System.out.println(errMsg);
         if (!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
+        //round
+        System.out.println("\nround Tests");
+        if (!processInput("(round (cond ((= var 12) 123) (#t 11) (#t 42)))").equals("123")) System.out.println(errMsg);
+
         //procedure
         System.out.println("\nprocedure Tests");
         if (!processInput("(define (add x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
