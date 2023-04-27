@@ -25,7 +25,7 @@ public class ASTPrinter {
         }
     }
 
-    public static String getEntryAsString(Entry e) {
+    public static String getEntryAsString(Entry e, boolean withClosingParenthesis) {
         StringBuilder ret = new StringBuilder();
         if (e != null) {
             ret.append(e.getToken().getText()+" ");
@@ -33,8 +33,9 @@ public class ASTPrinter {
                 List<Entry> children = e.getChildren();
                 for (int i = 0; i < children.size(); i++) {
                     Entry g = children.get(i);
-                    ret.append(getEntryAsString(g));
+                    ret.append(getEntryAsString(g, withClosingParenthesis));
                 }
+                if (withClosingParenthesis) ret.append(")");
             }
         }
         return ret.toString();

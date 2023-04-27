@@ -69,8 +69,9 @@ public class Interpreter {
         }
 
         //quoted?
-        if (isQuoted(entries.get(0)))
-            return StringToNumberEntry(ASTPrinter.getEntryAsString(entries.get(1)) + ")");
+        if (isQuoted(entries.get(0))) {
+            return entry;
+        }
 
         //isList
         if (isList(entries.get(0))) {
@@ -219,11 +220,25 @@ public class Interpreter {
         if (operator.equals("car")) {
             if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 2)
                 return StringToNumberEntry("null");
+            //If quoted return car part as unevaluated String
+            if(isQuoted(arguments.get(0).getChildren().get(0))) return StringToNumberEntry(ASTPrinter.getEntryAsString(arguments.get(0).getChildren().get(1).getChildren().get(0),false));
+            //return evaluated car-part
             return eval(arguments.get(0).getChildren().get(1), env);
         }
+
         if (operator.equals("cdr")) {
-            if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 3)
+            if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || (arguments.get(0).getChildren().size() < 3 && !isQuoted(arguments.get(0).getChildren().get(0))))
                 return StringToNumberEntry("null");
+
+            //If param is quoted return all child but the car-part unevaluated
+            if(isQuoted(arguments.get(0).getChildren().get(0))){
+                StringBuilder ret = new StringBuilder();
+                for(int i=1; i<arguments.get(0).getChildren().get(1).getChildren().size();i++){
+                    ret.append(ASTPrinter.getEntryAsString(arguments.get(0).getChildren().get(1).getChildren().get(i),true));
+                }
+                return StringToNumberEntry("("+ret+")");
+            }
+            //Return evaluated cdr-part
             return eval(arguments.get(0).getChildren().get(2), env);
         }
 

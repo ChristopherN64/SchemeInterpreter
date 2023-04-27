@@ -1,6 +1,4 @@
-import fh.scheme.parser.Entry;
-import fh.scheme.parser.SchemeLexer;
-import fh.scheme.parser.SchemeParser;
+import fh.scheme.parser.*;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -25,7 +23,7 @@ public class Main {
     }
 
     private static void runTests() {
-        String errMsg = "ERROR in Test";
+        String errMsg = "-----------------------ERROR in Test------------------------------";
         environment = new Environment();
         //Self evaluating
         System.out.println("\nSelf evaluating Tests");
@@ -58,6 +56,13 @@ public class Main {
         if (!processInput("'(+ 1 2)").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("quoteVar").equals("( + 12 3 )")) System.out.println(errMsg);
+        if (!processInput("(car (quote (lambda (x) (x+1))))").equals("lambda ")) System.out.println(errMsg);
+        if (!processInput("(cdr (quote (lambda (x) (x+1))))").equals("(( x )( x + 1 ))")) System.out.println(errMsg);
+        if (!processInput("(cdr (quote (lambda (x) (+ 1 (* 3 4)))))").equals("(( x )( + 1 ( * 3 4 )))")) System.out.println(errMsg);
+        if (!processInput("(define qx (quote (list 1 2 3 4)))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("qx").equals("( list 1 2 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(car qx)").equals("list ")) System.out.println(errMsg);
+        if (!processInput("(cdr qx)").equals("(1 2 3 4 )")) System.out.println(errMsg);
 
         //Lists
         System.out.println("\nList Tests");
@@ -153,10 +158,12 @@ public class Main {
             List<Entry> entrys = sp.program();
             Entry ret = Interpreter.eval(entrys.get(0), environment);
             if(ret==null) return "null";
-            String out = ret.getToken().getText();
-            if (isList(ret)) {
+            String out="";
+            if (isList(ret))
                 out = "( " + listToString(ret) + ")";
-            }
+            else if(ret.getToken().getType() == TokenType.LPARENTHESIS)
+                out = ASTPrinter.getEntryAsString(ret.getChildren().get(1),true);
+            else out = ret.getToken().getText();
             System.out.println(out);
             return out;
         } catch (Throwable r) {
