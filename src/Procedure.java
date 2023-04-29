@@ -9,6 +9,12 @@ public class Procedure {
     public String name;
     public List<Entry> variables;
 
+    public Procedure( String name, List<Entry> variables,Entry body) {
+        this.body = body;
+        this.name = name;
+        this.variables = variables;
+    }
+
     public Procedure(Entry definition, Entry body) {
         this.name = definition.getChildren().get(0).getToken().getText();
         this.variables = definition.getChildren().subList(1, definition.getChildren().size());
@@ -47,5 +53,9 @@ public class Procedure {
 
     public void setName(String name) {
         this.name=name;
+    }
+
+    public void setBody(Entry body) {
+        this.body = body;
     }
 }
