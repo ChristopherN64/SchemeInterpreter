@@ -120,8 +120,8 @@ public class Main {
         //null?
         System.out.println("\nnull? Tests");
         if (!processInput("(null? x)").equals("#f")) System.out.println(errMsg);
-        if (!processInput("p").equals("null")) System.out.println(errMsg);
-        if (!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
+        if (!processInput("p").equals("Variable undefined")) System.out.println(errMsg);
+        if (!processInput("(null? p)").equals("#f")) System.out.println(errMsg);
 
         //round
         System.out.println("\nround Tests");

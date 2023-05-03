@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","set!", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round"});
     public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "cons", "length", "null?","lambda","round"});
     public static String T = "#t";
     public static String F = "#f";
@@ -25,48 +25,24 @@ public class Interpreter {
 
         //Self Evaluating?
         if (entries.size() == 1 && isSelfEvaluating(entries.get(0))) return entries.get(0);
+        
+        if(isSet(entries.get(0))){
+            String varName = getVarName(entries.get(1));
+            if(setVariableIfExists(varName,eval(getVarBody(entry),env),env)) return StringToNumberEntry("Saved!");
+            return StringToNumberEntry("Variable "+varName+" not found!");
+        }
 
         //definition?
         if (isDefinition(entries.get(0))) {
-
-            String name = "";
-            List<Entry> argumentNames = new LinkedList<>();
-            Entry body;
-
-            //Var
-            if(entries.get(1).getToken().getType().equals(TokenType.LPARENTHESIS)){
-                name = entries.get(1).getChildren().get(0).getToken().getText();
-                if(entries.get(1).getChildren().size()>1) argumentNames = entries.get(1).getChildren().subList(1, entries.get(1).getChildren().size());
-            }
-            else name = entries.get(1).getToken().getText();
-            body = entries.get(2);
-
-            //Lambda
-            if(body.getChildren()!=null && body.getChildren().get(0).getToken().getText().equals("lambda")){
-                argumentNames = body.getChildren().get(1).getChildren();
-                body = body.getChildren().get(2);
-            }
-
-            if(body.getChildren()!=null && body.getChildren().size()>1 && !argumentNames.isEmpty()){
-                Entry args = new Entry(new Token(TokenType.LPARENTHESIS,"("));
-                args.setChildren(argumentNames);
-                //createLambda
-                Entry lambda = new Entry(new Token(TokenType.LPARENTHESIS,"("));
-                lambda.setChildren(new LinkedList<>());
-                lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
-                lambda.getChildren().add(args);
-                lambda.getChildren().add(body);
-
-                body = lambda;
-            }
-            putVariable(name,eval(body,env),env);
-
+            putVariable(getVarName(entries.get(1)),eval(getVarBody(entry),env),env);
             return StringToNumberEntry("Saved!");
         }
 
         //variable?
         if (isVariable(entries.get(0)) && entries.size()==1) {
-            return lookupVarValue(entries.get(0), env);
+            Entry value = lookupVarValue(entries.get(0), env);
+            if(value !=null) return value;
+            return StringToNumberEntry("Variable undefined");
         }
 
         //If
@@ -119,6 +95,46 @@ public class Interpreter {
         return StringToNumberEntry("EVAL - ERROR");
     }
 
+    private static String getVarName(Entry definition){
+        String name;
+        if(definition.getToken().getType().equals(TokenType.LPARENTHESIS)){
+            name = definition.getChildren().get(0).getToken().getText();
+        }
+        else name = definition.getToken().getText();
+        return name;
+    }
+
+    public static Entry getVarBody(Entry entry){
+        List<Entry> argumentNames = new LinkedList<>();
+        Entry body;
+
+        //Var
+        if(entry.getChildren().get(1).getToken().getType().equals(TokenType.LPARENTHESIS)){
+            if(entry.getChildren().get(1).getChildren().size()>1) argumentNames = entry.getChildren().get(1).getChildren().subList(1, entry.getChildren().get(1).getChildren().size());
+        }
+        body = entry.getChildren().get(2);
+
+        //Lambda
+        if(body.getChildren()!=null && body.getChildren().get(0).getToken().getText().equals("lambda")){
+            argumentNames = body.getChildren().get(1).getChildren();
+            body = body.getChildren().get(2);
+        }
+
+        if(body.getChildren()!=null && body.getChildren().size()>1 && !argumentNames.isEmpty()){
+            Entry args = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+            args.setChildren(argumentNames);
+            //createLambda
+            Entry lambda = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+            lambda.setChildren(new LinkedList<>());
+            lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
+            lambda.getChildren().add(args);
+            lambda.getChildren().add(body);
+
+            body = lambda;
+        }
+        return body;
+    }
+
     public static Entry apply(Entry procedure, Environment environment, List<Entry> arguments) {
         if (primitiveProcedure(procedure)) return applyPrimitive(procedure, environment, arguments);
         else {
@@ -151,6 +167,16 @@ public class Interpreter {
 
     private static void putVariable(String name,Entry var, Environment environment) {
         environment.variables.put(name, var);
+    }
+
+
+    private static boolean setVariableIfExists(String name,Entry var, Environment environment) {
+        if(environment==null) return false;
+        if(environment.getVariables().get(name) != null){
+            environment.getVariables().put(name,var);
+            return true;
+        }
+        return setVariableIfExists(name,var,environment.getParent());
     }
 
     public static Entry addElementToCons(Entry root, List<Entry> elements) {
@@ -208,6 +234,10 @@ public class Interpreter {
 
     private static boolean isDefinition(Entry entry) {
         return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("define");
+    }
+
+    private static boolean isSet(Entry entry) {
+        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("set!");
     }
 
     private static boolean isSelfEvaluating(Entry entry) {
