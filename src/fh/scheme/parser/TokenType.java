@@ -10,5 +10,7 @@ public enum TokenType {
     BOOLEAN,
     STRING,
     OPERATOR,
-    LIST
+    LIST,
+    LAMBDA,
+    PROCEDURE
 }

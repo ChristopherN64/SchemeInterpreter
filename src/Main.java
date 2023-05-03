@@ -145,6 +145,7 @@ public class Main {
         if (!processInput("(pro 1 2)").equals("3")) System.out.println(errMsg);
 
         //Complex functions
+        System.out.println("\nComplex Functions");
         if (!processInput("(define (laenge l)(if (null? l) 0 (if (null? (cdr l)) 1 (+ 1 (laenge (cdr l))))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(laenge (list 2 4 3))").equals("3")) System.out.println(errMsg);
 

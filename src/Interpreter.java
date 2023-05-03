@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 public class Interpreter {
     public static List<String> KEYWORDS = List.of(new String[]{"define", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round"});
+    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "cons", "length", "null?","lambda","round"});
     public static String T = "#t";
     public static String F = "#f";
 
@@ -27,30 +28,45 @@ public class Interpreter {
 
         //definition?
         if (isDefinition(entries.get(0))) {
+
             String name = "";
             List<Entry> argumentNames = new LinkedList<>();
             Entry body;
 
+            //Var
             if(entries.get(1).getToken().getType().equals(TokenType.LPARENTHESIS)){
                 name = entries.get(1).getChildren().get(0).getToken().getText();
                 if(entries.get(1).getChildren().size()>1) argumentNames = entries.get(1).getChildren().subList(1, entries.get(1).getChildren().size());
             }
             else name = entries.get(1).getToken().getText();
             body = entries.get(2);
+
+            //Lambda
             if(body.getChildren()!=null && body.getChildren().get(0).getToken().getText().equals("lambda")){
                 argumentNames = body.getChildren().get(1).getChildren();
                 body = body.getChildren().get(2);
             }
 
-            putProcedure(new Procedure(name,argumentNames,body),env);
+            if(body.getChildren()!=null && body.getChildren().size()>1 && !argumentNames.isEmpty()){
+                Entry args = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+                args.setChildren(argumentNames);
+                //createLambda
+                Entry lambda = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+                lambda.setChildren(new LinkedList<>());
+                lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
+                lambda.getChildren().add(args);
+                lambda.getChildren().add(body);
+
+                body = lambda;
+            }
+            putVariable(name,eval(body,env),env);
+
             return StringToNumberEntry("Saved!");
         }
 
         //variable?
-        if (isVariable(entries.get(0))) {
-            Entry variable = lookupVarValue(entries.get(0), env);
-            if (variable != null) return eval(variable, env);
-            if (lookupProValue(entries.get(0), env) == null) return null;
+        if (isVariable(entries.get(0)) && entries.size()==1) {
+            return lookupVarValue(entries.get(0), env);
         }
 
         //If
@@ -88,32 +104,28 @@ public class Interpreter {
             return entry;
         }
 
-        Procedure procedure = lookupProValue(entries.get(0), env);
         //isLambda
-        if(isLambda(entries.get(0))){
-            procedure = new Procedure(entries.get(0).getChildren().get(1).getChildren(), entries.get(0).getChildren().get(2));
+        if(isLambda(entry)){
+            return makeProcedure(entries.get(2),entries.get(1).getChildren());
         }
 
         //Application?
-        if (entries.get(0).getToken().getText().equals("lambda")) {
-            return StringToNumberEntry("procedure");
-        }
-        if (isApplication(entries.get(0)) || procedure != null) {
+        if (isApplication(entries.get(0))) {
+            Entry proc = eval(entries.get(0),env);
             List<Entry> arguments = entries.subList(1, entries.size());
             arguments.replaceAll(e -> eval(e, env));
-            if(procedure==null) procedure = new Procedure(entry, entries.get(0));
-            return apply(procedure, env, arguments);
+            return apply(proc, env, arguments);
         }
         return StringToNumberEntry("EVAL - ERROR");
     }
 
-    public static Entry apply(Procedure procedure, Environment environment, List<Entry> arguments) {
+    public static Entry apply(Entry procedure, Environment environment, List<Entry> arguments) {
         if (primitiveProcedure(procedure)) return applyPrimitive(procedure, environment, arguments);
         else {
             //Extend Environment (Put procedure Arguments in new SubEnvironment
-            Environment newEnv = extendEnvironment(procedure.getVariables().stream().map((e)->e.getToken().getText()).collect(Collectors.toList()), arguments,environment);
+            Environment newEnv = extendEnvironment(getProcedureVars(procedure).stream().map((e)->e.getToken().getText()).collect(Collectors.toList()), arguments,environment);
             //Eval ProcedureBody
-            return eval(procedure.getBody(), newEnv);
+            return eval(getProcedureBody(procedure), newEnv);
         }
     }
 
@@ -123,21 +135,22 @@ public class Interpreter {
         baseEnv.setChild(newEnv);
         //Put var Values in env
         for (int i = 0; i < values.size(); i++) {
-            putProcedure(new Procedure(variables.get(i),new LinkedList<>(), values.get(i)),newEnv);
+            putVariable(variables.get(i), values.get(i),newEnv);
         }
         return newEnv;
     }
 
-    private static boolean isProcedureDefinition(List<Entry> entries) {
-        return entries.size() == 3 && entries.get(1).getToken().getType().equals(TokenType.LPARENTHESIS);
+    private static Entry makeProcedure(Entry body, List<Entry> vars){
+        Entry proc = new Entry();
+        proc.setToken(new Token(TokenType.PROCEDURE,"procedure"));
+        proc.setChildren(new LinkedList<>());
+        proc.getChildren().add(body);
+        proc.getChildren().addAll(vars);
+        return proc;
     }
 
-    private static void putProcedure(Procedure procedure, Environment environment) {
-        environment.procedure.put(procedure.getName(), procedure);
-    }
-
-    private static void putVarValue(Environment env, String name, Entry value) {
-        env.variables.put(name, eval(value, env));
+    private static void putVariable(String name,Entry var, Environment environment) {
+        environment.variables.put(name, var);
     }
 
     public static Entry addElementToCons(Entry root, List<Entry> elements) {
@@ -172,7 +185,7 @@ public class Interpreter {
     }
 
     private static boolean isApplication(Entry entry) {
-        return entry.getToken().getType() == TokenType.OPERATOR || Procedure.PRIMITIVE_OPERATORS.contains(entry.getToken().getText());
+        return true;
     }
 
     private static boolean isIfCondition(Entry entry) {
@@ -190,7 +203,7 @@ public class Interpreter {
     private static boolean isVariable(Entry entry) {
         return entry.getToken().getType() == TokenType.ELEMENT
                 && !KEYWORDS.contains(entry.getToken().getText())
-                && !Procedure.PRIMITIVE_OPERATORS.contains(entry.getToken().getText());
+                && !PRIMITIVE_OPERATORS.contains(entry.getToken().getText());
     }
 
     private static boolean isDefinition(Entry entry) {
@@ -198,7 +211,7 @@ public class Interpreter {
     }
 
     private static boolean isSelfEvaluating(Entry entry) {
-        return isNumber(entry) || isBoolean(entry);
+        return isNumber(entry) || isBoolean(entry) || PRIMITIVE_OPERATORS.contains(entry.getToken().getText()) || entry.getToken().getType().equals(TokenType.OPERATOR );
     }
 
     private static boolean isBoolean(Entry entry) {
@@ -210,20 +223,22 @@ public class Interpreter {
     }
 
     private static Entry lookupVarValue(Entry entry, Environment env) {
-        return env.variables.get(entry.getToken().getText());
-    }
-
-    private static Procedure lookupProValue(Entry entry, Environment env) {
-        Procedure procedure;
         if(env==null) return null;
-        procedure = env.procedure.get(entry.getToken().getText());
-        if(procedure!=null) return procedure;
-        return lookupProValue(entry,env.getParent());
+        Entry val = env.variables.get(entry.getToken().getText());
+        if(val!=null) return val;
+        return lookupVarValue(entry,env.getParent());
     }
 
+    private static boolean primitiveProcedure(Entry procedure) {
+        return PRIMITIVE_OPERATORS.contains(procedure.getToken().getText());
+    }
 
-    private static boolean primitiveProcedure(Procedure procedure) {
-        return procedure.primitiveProcedure();
+    public static Entry getProcedureBody(Entry procedure){
+        return procedure.getChildren().get(0);
+    }
+
+    public static List<Entry> getProcedureVars(Entry procedure){
+        return procedure.getChildren().subList(1,procedure.getChildren().size());
     }
 
     public static int getListLength(Entry list, int length) {
@@ -234,8 +249,9 @@ public class Interpreter {
         } else return length;
     }
 
-    private static Entry applyPrimitive(Procedure procedure, Environment env, List<Entry> arguments) {
-        String operator = procedure.getBody().getToken().getText();
+    private static Entry applyPrimitive(Entry procedure, Environment env, List<Entry> arguments) {
+        String operator = procedure.getToken().getText();
+
         if (operator.equals("car")) {
             if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 2)
                 return null;
