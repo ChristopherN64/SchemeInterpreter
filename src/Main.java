@@ -68,12 +68,12 @@ public class Main {
         if (!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("quoteVar").equals("( + 12 3 )")) System.out.println(errMsg);
         if (!processInput("(car (quote (lambda (x) (x+1))))").equals("lambda ")) System.out.println(errMsg);
-        if (!processInput("(cdr (quote (lambda (x) (x+1))))").equals("(( x )( x + 1 ))")) System.out.println(errMsg);
-        if (!processInput("(cdr (quote (lambda (x) (+ 1 (* 3 4)))))").equals("(( x )( + 1 ( * 3 4 )))")) System.out.println(errMsg);
+        if (!processInput("(cdr (quote (lambda (x) (x+1))))").equals("( ( x ) ( x + 1 ) )")) System.out.println(errMsg);
+        if (!processInput("(cdr (quote (lambda (x) (+ 1 (* 3 4)))))").equals("( ( x ) ( + 1 ( * 3 4 ) ) )")) System.out.println(errMsg);
         if (!processInput("(define qx (quote (list 1 2 3 4)))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("qx").equals("( list 1 2 3 4 )")) System.out.println(errMsg);
         if (!processInput("(car qx)").equals("list ")) System.out.println(errMsg);
-        if (!processInput("(cdr qx)").equals("(1 2 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(cdr qx)").equals("( 1 2 3 4 )")) System.out.println(errMsg);
 
         //Lists
         System.out.println("\nList Tests");
@@ -179,10 +179,10 @@ public class Main {
             Entry ret = Interpreter.eval(entrys.get(0), environment);
             if(ret==null) return "null";
             String out="";
-            if (isList(ret))
-                out = "( " + listToString(ret) + ")";
-            else if(ret.getToken().getType() == TokenType.LPARENTHESIS)
-                out = ASTPrinter.getEntryAsString(ret.getChildren().get(1),true);
+
+            if(isQuoted(ret)) out =  "( " + Interpreter.listToString(ret.getChildren().get(1),false)+ ")";
+            else if (isList(ret)) out = "( " + Interpreter.listToString(ret,false) + ")";
+            else if(ret.getToken().getType() == TokenType.LPARENTHESIS) out = Interpreter.listToString(ret.getChildren().get(1),true);
             else out = ret.getToken().getText();
             System.out.println(out);
             return out;
@@ -192,26 +192,14 @@ public class Main {
         return "";
     }
 
+    private static boolean isQuoted(Entry entry) {
+        if (entry.getChildren() == null || entry.getChildren().size() == 0) return false;
+        return entry.getChildren().get(0).getToken().getText().equals("quote");
+    }
+
     public static boolean isList(Entry entry) {
         if (entry.getChildren() == null || entry.getChildren().size() == 0) return false;
         return entry.getChildren().get(0).getToken().getText().equals("list")
                 || entry.getChildren().get(0).getToken().getText().equals("cons");
-    }
-
-    private static String listToString(Entry list) {
-        StringBuilder ret = new StringBuilder();
-        if (list != null) {
-            String text = list.getToken().getText();
-            if (!text.equals("list") && !text.equals("cons") && !text.equals("(") && !text.equals(")"))
-                ret.append(text + " ");
-            if (list.getChildren() != null) {
-                List<Entry> children = list.getChildren();
-                for (int i = 0; i < children.size(); i++) {
-                    Entry g = children.get(i);
-                    ret.append(listToString(g));
-                }
-            }
-        }
-        return ret.toString();
     }
 }

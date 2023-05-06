@@ -1,6 +1,5 @@
 package fh.scheme.interpreter;
 
-import fh.scheme.parser.ASTPrinter;
 import fh.scheme.parser.Entry;
 import fh.scheme.parser.Token;
 import fh.scheme.parser.TokenType;
@@ -65,6 +64,7 @@ public class Interpreter {
 
         //quoted?
         if (isQuoted(entries.get(0))) {
+            entry.getChildren().set(1,convertListelementsToCons(entries.get(1).getChildren(),true));
             return entry;
         }
 
@@ -75,9 +75,7 @@ public class Interpreter {
             }
             //Rebuild list to nested cons
             if (entry.getChildren().size() > 3) {
-                Entry root = entry.getChildren().get(1);
-                List<Entry> elements = entry.getChildren().subList(2, entry.getChildren().size());
-                return addElementToCons(root, elements);
+                return convertListelementsToCons(entries.subList(1,entries.size()),false);
             }
             if (entry.getChildren().size()==2) entry.getChildren().add(null);
             return entry;
@@ -176,10 +174,17 @@ public class Interpreter {
         return setVariableIfExists(name,var,environment.getParent());
     }
 
-    public static Entry addElementToCons(Entry root, List<Entry> elements) {
+    private static Entry convertListelementsToCons(List<Entry> elements, boolean quote) {
+        if(quote) elements.set(0,StringToNumberEntry(listToString(elements.get(0),true)));
+        return addElementToCons(elements.get(0), elements.subList(1,elements.size()),quote);
+    }
+
+    public static Entry addElementToCons(Entry root, List<Entry> elements, boolean quote) {
+        //If list is quoted, don't eval elements but convert them to String
+        if(quote) elements.set(0,StringToNumberEntry(listToString(elements.get(0),true)));
         if (elements.size() == 1)
             return createConsEntry(root, createConsEntry(elements.get(0), null));
-        return createConsEntry(root, addElementToCons(elements.get(0), elements.subList(1, elements.size())));
+        return createConsEntry(root, addElementToCons(elements.get(0), elements.subList(1, elements.size()),quote));
     }
 
     public static Entry createEmptyConsEntry() {
@@ -219,7 +224,7 @@ public class Interpreter {
         return entry.getToken().getText().equals("cond");
     }
 
-    private static boolean isQuoted(Entry entry) {
+    public static boolean isQuoted(Entry entry) {
         return entry.getToken().getType() == TokenType.QUOTE || entry.getToken().getText().equals("quote");
     }
 
@@ -283,7 +288,7 @@ public class Interpreter {
             if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 2)
                 return null;
             //If quoted return car part as unevaluated String
-            if(isQuoted(arguments.get(0).getChildren().get(0))) return StringToNumberEntry(ASTPrinter.getEntryAsString(arguments.get(0).getChildren().get(1).getChildren().get(0),false));
+            if(isQuoted(arguments.get(0).getChildren().get(0))) return StringToNumberEntry(arguments.get(0).getChildren().get(1).getChildren().get(1).getToken().getText());
             //return evaluated car-part
             return eval(arguments.get(0).getChildren().get(1), env);
         }
@@ -294,11 +299,7 @@ public class Interpreter {
 
             //If param is quoted return all child but the car-part unevaluated
             if(isQuoted(arguments.get(0).getChildren().get(0))){
-                StringBuilder ret = new StringBuilder();
-                for(int i=1; i<arguments.get(0).getChildren().get(1).getChildren().size();i++){
-                    ret.append(ASTPrinter.getEntryAsString(arguments.get(0).getChildren().get(1).getChildren().get(i),true));
-                }
-                return StringToNumberEntry("("+ret+")");
+                return arguments.get(0).getChildren().get(1).getChildren().get(2);
             }
             //Return evaluated cdr-part
             return eval(arguments.get(0).getChildren().get(2), env);
@@ -342,6 +343,25 @@ public class Interpreter {
 
     private static Entry StringToBooleanEntry(String s) {
         return new Entry(new Token(TokenType.BOOLEAN, s));
+    }
+
+
+    public static String listToString(Entry list, Boolean withListTextElements) {
+        StringBuilder ret = new StringBuilder();
+        if (list != null) {
+            String text = list.getToken().getText();
+            if (withListTextElements || (!text.equals("list") && !text.equals("cons") && !text.equals("(")))
+                ret.append(text + " ");
+            if (list.getChildren() != null) {
+                List<Entry> children = list.getChildren();
+                for (int i = 0; i < children.size(); i++) {
+                    Entry g = children.get(i);
+                    ret.append(listToString(g,withListTextElements));
+                }
+                if(withListTextElements) ret.append(" )");
+            }
+        }
+        return ret.toString().replace("  "," ");
     }
 
 }
