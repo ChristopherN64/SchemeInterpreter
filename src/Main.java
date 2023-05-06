@@ -1,3 +1,5 @@
+import fh.scheme.interpreter.Environment;
+import fh.scheme.interpreter.Interpreter;
 import fh.scheme.parser.*;
 
 import java.io.BufferedReader;
@@ -30,10 +32,19 @@ public class Main {
         if (!processInput("7").equals("7")) System.out.println(errMsg);
         if (!processInput("#t").equals("#t")) System.out.println(errMsg);
 
-        //Variable
+        //Variable definition
         System.out.println("\nVariable Tests");
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("var").equals("12")) System.out.println(errMsg);
+
+        //Set!
+        System.out.println("\nSet! Tests");
+        if (!processInput("notDef").equals("Variable undefined")) System.out.println(errMsg);
+        if (!processInput("(set! notDef 12)").equals("Variable notDef not found!")) System.out.println(errMsg);
+        if (!processInput("(define notDef 12)").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(set! notDef 42)").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("notDef").equals("42")) System.out.println(errMsg);
+
 
         //Primitive Functions
         System.out.println("\nPrimitive functions Tests");
@@ -148,6 +159,13 @@ public class Main {
         System.out.println("\nComplex Functions");
         if (!processInput("(define (laenge l)(if (null? l) 0 (if (null? (cdr l)) 1 (+ 1 (laenge (cdr l))))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(laenge (list 2 4 3))").equals("3")) System.out.println(errMsg);
+
+        if (!processInput("(define (erzeuge-konto-abheben saldo)" +
+                "(lambda (betrag)" +
+                "(set! saldo (- saldo betrag))" +
+                "saldo))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(define konto (erzeuge-konto-abheben 1100))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(konto 100)").equals("1000")) System.out.println(errMsg);
 
         environment = new Environment();
     }

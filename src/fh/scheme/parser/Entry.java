@@ -1,5 +1,7 @@
 package fh.scheme.parser;
 
+import fh.scheme.interpreter.Environment;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +15,7 @@ public class Entry {
 	private List<Entry> children;
 	private boolean leaf;
 	private Iterator<Entry> it;
+    private Environment procedureEnvironment;
 	
 	
 	public Entry() {
@@ -51,19 +54,14 @@ public class Entry {
 		}
 		children.add(child);
 	}
-	
-	public Entry next() {
-		if (children == null) {
-			return null;
-		}
-		if (it == null) {
-			it = children.iterator();
-		}
-		if (it.hasNext()) {
-			return it.next();
-		}
-		return null;
-	}
+
+    public Environment getProcedureEnvironment() {
+        return procedureEnvironment;
+    }
+
+    public void setProcedureEnvironment(Environment procedureEnvironment) {
+        this.procedureEnvironment = procedureEnvironment;
+    }
 
 	@Override
 	public String toString() {

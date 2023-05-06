@@ -1,3 +1,5 @@
+package fh.scheme.interpreter;
+
 import fh.scheme.parser.ASTPrinter;
 import fh.scheme.parser.Entry;
 import fh.scheme.parser.Token;
@@ -82,7 +84,7 @@ public class Interpreter {
 
         //isLambda
         if(isLambda(entry)){
-            return makeProcedure(entries.get(2),entries.get(1).getChildren());
+            return makeProcedure(entries.get(2),entries.get(1).getChildren(),env);
         }
 
         //Application?
@@ -114,12 +116,6 @@ public class Interpreter {
         }
         body = entry.getChildren().get(2);
 
-        //Lambda
-        if(body.getChildren()!=null && body.getChildren().get(0).getToken().getText().equals("lambda")){
-            argumentNames = body.getChildren().get(1).getChildren();
-            body = body.getChildren().get(2);
-        }
-
         if(body.getChildren()!=null && body.getChildren().size()>1 && !argumentNames.isEmpty()){
             Entry args = new Entry(new Token(TokenType.LPARENTHESIS,"("));
             args.setChildren(argumentNames);
@@ -138,8 +134,8 @@ public class Interpreter {
     public static Entry apply(Entry procedure, Environment environment, List<Entry> arguments) {
         if (primitiveProcedure(procedure)) return applyPrimitive(procedure, environment, arguments);
         else {
-            //Extend Environment (Put procedure Arguments in new SubEnvironment
-            Environment newEnv = extendEnvironment(getProcedureVars(procedure).stream().map((e)->e.getToken().getText()).collect(Collectors.toList()), arguments,environment);
+            //Extend fh.scheme.interpreter.Environment (Put procedure Arguments in new SubEnvironment
+            Environment newEnv = extendEnvironment(getProcedureVars(procedure).stream().map((e)->e.getToken().getText()).collect(Collectors.toList()), arguments,procedure.getProcedureEnvironment());
             //Eval ProcedureBody
             return eval(getProcedureBody(procedure), newEnv);
         }
@@ -148,7 +144,6 @@ public class Interpreter {
     public static Environment extendEnvironment(List<String> variables,List<Entry> values, Environment baseEnv){
         Environment newEnv = new Environment();
         newEnv.setParent(baseEnv);
-        baseEnv.setChild(newEnv);
         //Put var Values in env
         for (int i = 0; i < values.size(); i++) {
             putVariable(variables.get(i), values.get(i),newEnv);
@@ -156,12 +151,13 @@ public class Interpreter {
         return newEnv;
     }
 
-    private static Entry makeProcedure(Entry body, List<Entry> vars){
+    private static Entry makeProcedure(Entry body, List<Entry> vars,Environment environment){
         Entry proc = new Entry();
         proc.setToken(new Token(TokenType.PROCEDURE,"procedure"));
         proc.setChildren(new LinkedList<>());
         proc.getChildren().add(body);
         proc.getChildren().addAll(vars);
+        proc.setProcedureEnvironment(environment);
         return proc;
     }
 
