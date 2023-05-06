@@ -79,6 +79,7 @@ public class Interpreter {
                 List<Entry> elements = entry.getChildren().subList(2, entry.getChildren().size());
                 return addElementToCons(root, elements);
             }
+            if (entry.getChildren().size()==2) entry.getChildren().add(null);
             return entry;
         }
 
@@ -176,8 +177,8 @@ public class Interpreter {
     }
 
     public static Entry addElementToCons(Entry root, List<Entry> elements) {
-        if (elements.size() == 2)
-            return createConsEntry(root, createConsEntry(elements.get(0), elements.get(1)));
+        if (elements.size() == 1)
+            return createConsEntry(root, createConsEntry(elements.get(0), null));
         return createConsEntry(root, addElementToCons(elements.get(0), elements.subList(1, elements.size())));
     }
 
@@ -267,12 +268,12 @@ public class Interpreter {
         return procedure.getChildren().subList(1,procedure.getChildren().size());
     }
 
-    public static int getListLength(Entry list, int length) {
-        if (list.getChildren() != null) {
-            if (list.getChildren().size() == 1) return 0;
-            if (list.getChildren().size() == 2) return 1;
-            return getListLength(list.getChildren().get(1), length) + getListLength(list.getChildren().get(2), length);
-        } else return length;
+    public static int getListLength(Entry list) {
+        if(list == null || (list.getChildren()!=null && list.getChildren().size()==1)) return 0;
+        if(list.getChildren() == null
+                || list.getChildren().size() == 2
+                || list.getChildren().get(2)==null) return 1;
+        return getListLength(list.getChildren().get(1)) + getListLength(list.getChildren().get(2));
     }
 
     private static Entry applyPrimitive(Entry procedure, Environment env, List<Entry> arguments) {
@@ -304,7 +305,7 @@ public class Interpreter {
         }
 
         if (operator.equals("length"))
-            return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0), 1)));
+            return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0))));
 
         if (operator.equals("null?"))
             return StringToBooleanEntry(arguments.get(0)==null ? T : F);

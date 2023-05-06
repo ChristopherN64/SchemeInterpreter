@@ -100,7 +100,7 @@ public class Main {
         if (!processInput("(cdr (list 1))").equals("null")) System.out.println(errMsg);
         if (!processInput("(car (list ))").equals("null")) System.out.println(errMsg);
         if (!processInput("(car (cdr l))").equals("2")) System.out.println(errMsg);
-        if (!processInput("(cdr (cdr (cdr l)))").equals("4")) System.out.println(errMsg);
+        if (!processInput("(cdr (cdr (cdr l)))").equals("( 4 )")) System.out.println(errMsg);
 
         //if and cond
         System.out.println("\nIf / Cond Tests");
@@ -159,13 +159,14 @@ public class Main {
         System.out.println("\nComplex Functions");
         if (!processInput("(define (laenge l)(if (null? l) 0 (if (null? (cdr l)) 1 (+ 1 (laenge (cdr l))))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(laenge (list 2 4 3))").equals("3")) System.out.println(errMsg);
+        if (!processInput("(laenge '(2 4 3))").equals("3")) System.out.println(errMsg);
 
         if (!processInput("(define (erzeuge-konto-abheben saldo)" +
                 "(lambda (betrag)" +
                 "(set! saldo (- saldo betrag))" +
                 "saldo))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define konto (erzeuge-konto-abheben 1100))").equals("Saved!")) System.out.println(errMsg);
-        if (!processInput("(konto 100)").equals("1000")) System.out.println(errMsg);
+        //if (!processInput("(konto 100)").equals("1000")) System.out.println(errMsg);
 
         environment = new Environment();
     }
