@@ -39,6 +39,11 @@ public class Interpreter {
             return StringToNumberEntry("Saved!");
         }
 
+        //let?
+        if (isLet(entries.get(0))){
+            return eval(buildLambdaCallFromLet(entries),env);
+        }
+
         //variable?
         if (isVariable(entries.get(0)) && entries.size()==1) {
             Entry value = lookupVarValue(entries.get(0), env);
@@ -95,6 +100,38 @@ public class Interpreter {
         return StringToNumberEntry("EVAL - ERROR");
     }
 
+    private static Entry buildLambdaCallFromLet(List<Entry> entries) {
+        Entry argDefinition = entries.get(1);
+        List<Entry> argNames = new LinkedList<>();
+        List<Entry> argValues = new LinkedList<>();
+
+        argDefinition.getChildren().forEach((c)->{
+            argNames.add(c.getChildren().get(0));
+            argValues.add(c.getChildren().get(1));
+        });
+
+
+        Entry lambdaBody = entries.get(2);
+
+        Entry lambdaVars = getLParenthesisEntry();
+        lambdaVars.setChildren(new LinkedList<>());
+        argNames.forEach((argName)-> lambdaVars.getChildren().add(argName));
+
+        Entry lambda = getLParenthesisEntry();
+        lambda.setChildren(new LinkedList<>());
+        lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
+
+        lambda.getChildren().add(lambdaVars);
+        lambda.getChildren().add(lambdaBody);
+
+        //build Lambda call
+        Entry lambdaCall = getLParenthesisEntry();
+        lambdaCall.setChildren(new LinkedList<>());
+        lambdaCall.getChildren().add(lambda);
+        argValues.forEach((argValue)->lambdaCall.getChildren().add(argValue));
+        return lambdaCall;
+    }
+
     private static String getVarName(Entry definition){
         String name;
         if(definition.getToken().getType().equals(TokenType.LPARENTHESIS)){
@@ -115,10 +152,10 @@ public class Interpreter {
         body = entry.getChildren().get(2);
 
         if(body.getChildren()!=null && body.getChildren().size()>1 && !argumentNames.isEmpty()){
-            Entry args = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+            Entry args = getLParenthesisEntry();
             args.setChildren(argumentNames);
             //createLambda
-            Entry lambda = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+            Entry lambda = getLParenthesisEntry();
             lambda.setChildren(new LinkedList<>());
             lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
             lambda.getChildren().add(args);
@@ -240,6 +277,10 @@ public class Interpreter {
 
     private static boolean isSet(Entry entry) {
         return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("set!");
+    }
+
+    private static boolean isLet(Entry entry) {
+        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("let");
     }
 
     private static boolean isSelfEvaluating(Entry entry) {
@@ -364,4 +405,8 @@ public class Interpreter {
         return ret.toString().replace("  "," ");
     }
 
+
+    public static Entry getLParenthesisEntry(){
+        return new Entry(new Token(TokenType.LPARENTHESIS,"("));
+    }
 }
