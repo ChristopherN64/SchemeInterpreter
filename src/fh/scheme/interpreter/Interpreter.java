@@ -70,6 +70,8 @@ public class Interpreter {
         //quoted?
         if (isQuoted(entries.get(0))) {
             entry.getChildren().set(1,convertListelementsToCons(entries.get(1).getChildren(),true));
+            entry = entry.getChildren().get(1);
+            entry.getToken().setType(TokenType.QUOTE);
             return entry;
         }
 

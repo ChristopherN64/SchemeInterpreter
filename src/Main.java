@@ -28,10 +28,6 @@ public class Main {
         String errMsg = "-----------------------ERROR in Test------------------------------";
         environment = new Environment();
 
-        if (!processInput("(define (anhaengen l r)(if (null? l) r (cons (car l) (anhaengen (cdr l) r))))").equals("Saved!")) System.out.println(errMsg);
-        if (!processInput("(anhaengen (list 1 2) (list 3))").equals("Saved!")) System.out.println(errMsg);
-
-
         //Self evaluating
         System.out.println("\nSelf evaluating Tests");
         if (!processInput("7").equals("7")) System.out.println(errMsg);
@@ -39,11 +35,13 @@ public class Main {
 
         //Variable definition
         System.out.println("\nVariable Tests");
+        environment = new Environment();
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("var").equals("12")) System.out.println(errMsg);
 
         //Set!
         System.out.println("\nSet! Tests");
+        environment = new Environment();
         if (!processInput("notDef").equals("null")) System.out.println(errMsg);
         if (!processInput("(set! notDef 12)").equals("Variable notDef not found!")) System.out.println(errMsg);
         if (!processInput("(define notDef 12)").equals("Saved!")) System.out.println(errMsg);
@@ -52,6 +50,7 @@ public class Main {
 
         //let
         System.out.println("\nLet Tests");
+        environment = new Environment();
         if (!processInput("(let ((a (list 1 2 3))    (b (list 4 5 6)))         (cons a b))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
         if (!processInput("((lambda (a b) (cons a b)) (list 1 2 3) (list 4 5 6))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
         if (!processInput("(define (foo x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
@@ -59,21 +58,26 @@ public class Main {
 
         //Primitive Functions
         System.out.println("\nPrimitive functions Tests");
+        environment = new Environment();
         if (!processInput("(+ 1 2)").equals("3")) System.out.println(errMsg);
+        if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(+ (+ 1 var) (* 10 5))").equals("63")) System.out.println(errMsg);
 
         //comparison operators
         System.out.println("\ncomparison operators Tests");
+        environment = new Environment();
         if (!processInput("(#t)").equals("#t")) System.out.println(errMsg);
         if (!processInput("(#f)").equals("#f")) System.out.println(errMsg);
         if (!processInput("(< 1 2)").equals("#t")) System.out.println(errMsg);
         if (!processInput("(> 1 2)").equals("#f")) System.out.println(errMsg);
         if (!processInput("(<= 1 1)").equals("#t")) System.out.println(errMsg);
         if (!processInput("(>= 1 2)").equals("#f")) System.out.println(errMsg);
+        if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(= 12 var)").equals("#t")) System.out.println(errMsg);
 
         //quote
         System.out.println("\nQuote Tests");
+        environment = new Environment();
         if (!processInput("(quote (+ 1 2))").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("'(+ 1 2)").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
@@ -88,6 +92,8 @@ public class Main {
 
         //Lists
         System.out.println("\nList Tests");
+        environment = new Environment();
+        if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(cons 1 2)").equals("( 1 2 )")) System.out.println(errMsg);
         if (!processInput("(cons 1 (cons 2 3))").equals("( 1 2 3 )")) System.out.println(errMsg);
         if (!processInput("(cons 1 (cons 2 var))").equals("( 1 2 12 )")) System.out.println(errMsg);
@@ -115,14 +121,17 @@ public class Main {
 
         //if and cond
         System.out.println("\nIf / Cond Tests");
+        environment = new Environment();
         if (!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);
         if (!processInput("(if (> 1 2) 1234 5678)").equals("5678")) System.out.println(errMsg);
         if (!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42")) System.out.println(errMsg);
         if (!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
+        if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123")) System.out.println(errMsg);
 
         //Length
         System.out.println("\nLength Tests");
+        environment = new Environment();
         if (!processInput("(define l (cons 1 (cons 2 (cons 3 4))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(length l)").equals("4")) System.out.println(errMsg);
         if (!processInput("(define l (list 1 2 3 4))").equals("Saved!")) System.out.println(errMsg);
@@ -141,16 +150,21 @@ public class Main {
 
         //null?
         System.out.println("\nnull? Tests");
+        environment = new Environment();
+        if (!processInput("(define x 42)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(null? x)").equals("#f")) System.out.println(errMsg);
         if (!processInput("p").equals("null")) System.out.println(errMsg);
         if (!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
         //round
         System.out.println("\nround Tests");
+        environment = new Environment();
+        if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(round (cond ((= var 12) 123) (#t 11) (#t 42)))").equals("123")) System.out.println(errMsg);
 
         //procedure
         System.out.println("\nprocedure Tests");
+        environment = new Environment();
         if (!processInput("(define (add x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define (minus x y) (- x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(add 1 2)").equals("3")) System.out.println(errMsg);
@@ -160,6 +174,7 @@ public class Main {
 
         //Lambda
         System.out.println("\nlambda Tests");
+        environment = new Environment();
         if (!processInput("(lambda (x y) (+ x y))").equals("procedure")) System.out.println(errMsg);
         if (!processInput("((lambda (x y) (+ x y)) 1 4)").equals("5")) System.out.println(errMsg);
         if (!processInput("(+ 100 ((lambda (x y) (+ x y)) 1 4))").equals("105")) System.out.println(errMsg);
@@ -168,9 +183,18 @@ public class Main {
 
         //Complex functions
         System.out.println("\nComplex Functions");
+        environment = new Environment();
         if (!processInput("(define (laenge l)(if (null? l) 0 (if (null? (cdr l)) 1 (+ 1 (laenge (cdr l))))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(laenge (list 2 4 3))").equals("3")) System.out.println(errMsg);
         if (!processInput("(laenge '(2 4 3))").equals("3")) System.out.println(errMsg);
+
+        if (!processInput("(define (last l)(if (null? (cdr l)) (car l) (last (cdr l))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(last (list 1 2 2 3 11))").equals("11")) System.out.println(errMsg);
+        if (!processInput("(last '(1 2 2 3 11))").equals("11 ")) System.out.println(errMsg);
+
+        if (!processInput("(define (anhaengen l r)(if (null? l) r (cons (car l) (anhaengen (cdr l) r))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(anhaengen (list 1 2) (list 3))").equals("( 1 2 3 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen '(1 2) '(3 4))").equals("( 1 2 3 4 )")) System.out.println(errMsg);
 
         if (!processInput("(define (erzeuge-konto-abheben saldo)" +
                 "(lambda (betrag)" +
