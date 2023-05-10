@@ -39,7 +39,7 @@ public class Main {
 
         //Set!
         System.out.println("\nSet! Tests");
-        if (!processInput("notDef").equals("Variable undefined")) System.out.println(errMsg);
+        if (!processInput("notDef").equals("null")) System.out.println(errMsg);
         if (!processInput("(set! notDef 12)").equals("Variable notDef not found!")) System.out.println(errMsg);
         if (!processInput("(define notDef 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(set! notDef 42)").equals("Saved!")) System.out.println(errMsg);
@@ -131,8 +131,8 @@ public class Main {
         //null?
         System.out.println("\nnull? Tests");
         if (!processInput("(null? x)").equals("#f")) System.out.println(errMsg);
-        if (!processInput("p").equals("Variable undefined")) System.out.println(errMsg);
-        if (!processInput("(null? p)").equals("#f")) System.out.println(errMsg);
+        if (!processInput("p").equals("null")) System.out.println(errMsg);
+        if (!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
         //round
         System.out.println("\nround Tests");
@@ -177,17 +177,20 @@ public class Main {
             SchemeParser sp = new SchemeParser(sl);
             List<Entry> entrys = sp.program();
             Entry ret = Interpreter.eval(entrys.get(0), environment);
-            if(ret==null) return "null";
             String out="";
-
-            if(isQuoted(ret)) out =  "( " + Interpreter.listToString(ret.getChildren().get(1),false)+ ")";
-            else if (isList(ret)) out = "( " + Interpreter.listToString(ret,false) + ")";
-            else if(ret.getToken().getType() == TokenType.LPARENTHESIS) out = Interpreter.listToString(ret.getChildren().get(1),true);
-            else out = ret.getToken().getText();
+            if(ret==null) {
+                out =  "null";
+            }
+            else {
+                if(isQuoted(ret)) out =  "( " + Interpreter.listToString(ret.getChildren().get(1),false)+ ")";
+                else if (isList(ret)) out = "( " + Interpreter.listToString(ret,false) + ")";
+                else if(ret.getToken().getType() == TokenType.LPARENTHESIS) out = Interpreter.listToString(ret.getChildren().get(1),true);
+                else out = ret.getToken().getText();
+            }
             System.out.println(out);
             return out;
         } catch (Throwable r) {
-            System.out.println("Ein Fehler ist aufgetreten\n" + Arrays.toString(r.getStackTrace()));
+            System.out.println("Ein Fehler ist aufgetreten\n" +r.getMessage()+"\n"+ Arrays.toString(r.getStackTrace()));
         }
         return "";
     }

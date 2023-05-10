@@ -42,8 +42,7 @@ public class Interpreter {
         //variable?
         if (isVariable(entries.get(0)) && entries.size()==1) {
             Entry value = lookupVarValue(entries.get(0), env);
-            if(value !=null) return value;
-            return StringToNumberEntry("Variable undefined");
+            return value;
         }
 
         //If
@@ -175,6 +174,7 @@ public class Interpreter {
     }
 
     private static Entry convertListelementsToCons(List<Entry> elements, boolean quote) {
+        if(elements==null || elements.isEmpty()) return createConsEntry(null,null);
         if(quote) elements.set(0,StringToNumberEntry(listToString(elements.get(0),true)));
         return addElementToCons(elements.get(0), elements.subList(1,elements.size()),quote);
     }
