@@ -45,6 +45,12 @@ public class Main {
         if (!processInput("(set! notDef 42)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("notDef").equals("42")) System.out.println(errMsg);
 
+        //let
+        System.out.println("\nLet Tests");
+        if (!processInput("(let ((a (list 1 2 3))    (b (list 4 5 6)))         (cons a b))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
+        if (!processInput("((lambda (a b) (cons a b)) (list 1 2 3) (list 4 5 6))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
+        if (!processInput("(define (foo x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(let ((x 10) (y 20))(foo x y))").equals("30")) System.out.println(errMsg);
 
         //Primitive Functions
         System.out.println("\nPrimitive functions Tests");

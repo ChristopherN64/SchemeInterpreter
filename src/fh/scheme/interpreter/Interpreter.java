@@ -39,6 +39,39 @@ public class Interpreter {
             return StringToNumberEntry("Saved!");
         }
 
+        //let?
+        if (isLet(entries.get(0))){
+            Entry argDefinition = entries.get(1);
+            List<Entry> argNames = new LinkedList<>();
+            List<Entry> argValues = new LinkedList<>();
+
+            argDefinition.getChildren().forEach((c)->{
+                argNames.add(c.getChildren().get(0));
+                argValues.add(c.getChildren().get(1));
+            });
+
+
+            Entry lambdaBody = entries.get(2);
+
+            Entry lambdaVars = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+            lambdaVars.setChildren(new LinkedList<>());
+            argNames.forEach((argName)-> lambdaVars.getChildren().add(argName));
+
+            Entry lambda = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+            lambda.setChildren(new LinkedList<>());
+            lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
+
+            lambda.getChildren().add(lambdaVars);
+            lambda.getChildren().add(lambdaBody);
+
+            //build Lambda call
+            Entry lambdaCall = new Entry(new Token(TokenType.LPARENTHESIS,"("));
+            lambdaCall.setChildren(new LinkedList<>());
+            lambdaCall.getChildren().add(lambda);
+            argValues.forEach((argValue)->lambdaCall.getChildren().add(argValue));
+            return eval(lambdaCall,env);
+        }
+
         //variable?
         if (isVariable(entries.get(0)) && entries.size()==1) {
             Entry value = lookupVarValue(entries.get(0), env);
@@ -240,6 +273,10 @@ public class Interpreter {
 
     private static boolean isSet(Entry entry) {
         return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("set!");
+    }
+
+    private static boolean isLet(Entry entry) {
+        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("let");
     }
 
     private static boolean isSelfEvaluating(Entry entry) {
