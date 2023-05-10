@@ -27,6 +27,11 @@ public class Main {
     private static void runTests() {
         String errMsg = "-----------------------ERROR in Test------------------------------";
         environment = new Environment();
+
+        if (!processInput("(define (anhaengen l r)(if (null? l) r (cons (car l) (anhaengen (cdr l) r))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(anhaengen (list 1 2) (list 3))").equals("Saved!")) System.out.println(errMsg);
+
+
         //Self evaluating
         System.out.println("\nSelf evaluating Tests");
         if (!processInput("7").equals("7")) System.out.println(errMsg);

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","set!", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round"});
+    public static List<String> KEYWORDS = List.of(new String[]{"define","set!", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round","let"});
     public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "cons", "length", "null?","lambda","round"});
     public static String T = "#t";
     public static String F = "#f";
@@ -26,7 +26,8 @@ public class Interpreter {
 
         //Self Evaluating?
         if (entries.size() == 1 && isSelfEvaluating(entries.get(0))) return entries.get(0);
-        
+
+        //Set
         if(isSet(entries.get(0))){
             String varName = getVarName(entries.get(1));
             if(setVariableIfExists(varName,eval(getVarBody(entry),env),env)) return StringToNumberEntry("Saved!");
@@ -72,14 +73,19 @@ public class Interpreter {
             return entry;
         }
 
+        //isCons
+        if(isCons(entries.get(0))){
+            return createConsEntry(eval(entries.get(1),env),eval(entries.get(2),env));
+        }
+
         //isList
         if (isList(entries.get(0))) {
             for (int i = 1; i < entry.getChildren().size(); i++) {
-                entry.getChildren().set(i, eval(entries.get(i), env));
+                entry.getChildren().set(i, eval(entry.getChildren().get(i), env));
             }
             //Rebuild list to nested cons
-            if (entry.getChildren().size() > 3) {
-                return convertListelementsToCons(entries.subList(1,entries.size()),false);
+            if (entry.getChildren().size() > 2) {
+                return convertListelementsToCons(entry.getChildren().subList(1,entry.getChildren().size()),false);
             }
             if (entry.getChildren().size()==2) entry.getChildren().add(null);
             return entry;
@@ -246,7 +252,12 @@ public class Interpreter {
     }
 
     public static boolean isList(Entry entry) {
-        return entry.getToken().getText().equals("list") || entry.getToken().getText().equals("cons");
+        return entry.getToken().getText().equals("list");
+    }
+
+
+    private static boolean isCons(Entry entry) {
+        return entry.getToken().getText().equals("cons");
     }
 
     private static boolean isApplication(Entry entry) {
@@ -266,7 +277,7 @@ public class Interpreter {
     }
 
     private static boolean isVariable(Entry entry) {
-        return entry.getToken().getType() == TokenType.ELEMENT
+        return entry!=null && entry.getToken().getType() == TokenType.ELEMENT
                 && !KEYWORDS.contains(entry.getToken().getText())
                 && !PRIMITIVE_OPERATORS.contains(entry.getToken().getText());
     }
@@ -316,9 +327,7 @@ public class Interpreter {
 
     public static int getListLength(Entry list) {
         if(list == null || (list.getChildren()!=null && list.getChildren().size()==1)) return 0;
-        if(list.getChildren() == null
-                || list.getChildren().size() == 2
-                || list.getChildren().get(2)==null) return 1;
+        if(list.getChildren() == null) return 1;
         return getListLength(list.getChildren().get(1)) + getListLength(list.getChildren().get(2));
     }
 
@@ -356,24 +365,24 @@ public class Interpreter {
             return arguments.get(0);
 
         if (operator.equals("*"))
-            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a * b).get().toString());
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a * b).get().toString());
         if (operator.equals("/"))
-            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a / b).get().toString());
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a / b).get().toString());
         if (operator.equals("+"))
-            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a + b).get().toString());
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a + b).get().toString());
         if (operator.equals("-"))
-            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText())).reduce((a, b) -> a - b).get().toString());
+            return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a - b).get().toString());
 
         if (operator.equals(">"))
-            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) > Integer.parseInt(arguments.get(1).getToken().getText()) ? T : F);
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) > Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
         if (operator.equals(">="))
-            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) >= Integer.parseInt(arguments.get(1).getToken().getText()) ? T : F);
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) >= Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
         if (operator.equals("<"))
-            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) < Integer.parseInt(arguments.get(1).getToken().getText()) ? T : F);
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) < Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
         if (operator.equals("<="))
-            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) <= Integer.parseInt(arguments.get(1).getToken().getText()) ? T : F);
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) <= Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
         if (operator.equals("="))
-            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText()) == Integer.parseInt(arguments.get(1).getToken().getText()) ? T : F);
+            return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) == Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
 
         return StringToNumberEntry("");
     }
@@ -388,16 +397,18 @@ public class Interpreter {
 
 
     public static String listToString(Entry list, Boolean withListTextElements) {
+        if(list==null) return "";
         StringBuilder ret = new StringBuilder();
         if (list != null) {
             String text = list.getToken().getText();
+            if(text==null) text = "";
             if (withListTextElements || (!text.equals("list") && !text.equals("cons") && !text.equals("(")))
-                ret.append(text + " ");
+                ret.append(text).append(" ");
             if (list.getChildren() != null) {
                 List<Entry> children = list.getChildren();
                 for (int i = 0; i < children.size(); i++) {
                     Entry g = children.get(i);
-                    ret.append(listToString(g,withListTextElements));
+                    if(g!=null) ret.append(listToString(g,withListTextElements));
                 }
                 if(withListTextElements) ret.append(" )");
             }
