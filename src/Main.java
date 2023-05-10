@@ -194,7 +194,16 @@ public class Main {
 
         if (!processInput("(define (anhaengen l r)(if (null? l) r (cons (car l) (anhaengen (cdr l) r))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(anhaengen (list 1 2) (list 3))").equals("( 1 2 3 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen (list 1 2) (list ))").equals("( 1 2 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen (list 1) (list 3 4))").equals("( 1 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen (list ) (list 3 4))").equals("( 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen (list ) (list ))").equals("( )")) System.out.println(errMsg);
         if (!processInput("(anhaengen '(1 2) '(3 4))").equals("( 1 2 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen '(1) '(3 4))").equals("( 1 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen '() '(3 4))").equals("( 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen '(3 4) '())").equals("( 3 4 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen '(3) '())").equals("( 3 )")) System.out.println(errMsg);
+        if (!processInput("(anhaengen '() '())").equals("( )")) System.out.println(errMsg);
 
         if (!processInput("(define (erzeuge-konto-abheben saldo)" +
                 "(lambda (betrag)" +

@@ -225,6 +225,7 @@ public class Interpreter {
     }
 
     public static Entry addElementToCons(Entry root, List<Entry> elements, boolean quote) {
+        if(elements==null || elements.isEmpty()) return createConsEntry(root,null);
         //If list is quoted, don't eval elements but convert them to String
         if(quote) elements.set(0,StringToNumberEntry(listToString(elements.get(0),true)));
         if (elements.size() == 1)
