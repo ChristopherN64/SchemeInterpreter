@@ -16,7 +16,6 @@ public class Main {
         //Tests
         runTests();
 
-        environment = new Environment();
         while (true) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
             String in = bufferedReader.readLine();
@@ -27,6 +26,7 @@ public class Main {
     private static void runTests() {
         String errMsg = "-----------------------ERROR in Test------------------------------";
         environment = new Environment();
+
 
         //Self evaluating
         System.out.println("\nSelf evaluating Tests");
@@ -110,6 +110,7 @@ public class Main {
         if (!processInput("(define treeVar (cons 1 varList))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(car (cdr treeVar))").equals("2")) System.out.println(errMsg);
 
+        if (!processInput("(list )").equals("( )")) System.out.println(errMsg);
         if (!processInput("(define x 3)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define l (list 1 2 x 4))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(car l)").equals("1")) System.out.println(errMsg);
@@ -118,6 +119,11 @@ public class Main {
         if (!processInput("(car (list ))").equals("null")) System.out.println(errMsg);
         if (!processInput("(car (cdr l))").equals("2")) System.out.println(errMsg);
         if (!processInput("(cdr (cdr (cdr l)))").equals("( 4 )")) System.out.println(errMsg);
+
+        if (!processInput("'()").equals("( )")) System.out.println(errMsg);
+        if (!processInput("'(1 2 3 4 5)").equals("( 1 2 3 4 5 )")) System.out.println(errMsg);
+        if (!processInput("(car '(1 2 3 4 5))").equals("1 ")) System.out.println(errMsg);
+        if (!processInput("(cdr '(1 2 3 4 5))").equals("( 2 3 4 5 )")) System.out.println(errMsg);
 
         //if and cond
         System.out.println("\nIf / Cond Tests");
@@ -212,7 +218,28 @@ public class Main {
         if (!processInput("(define konto (erzeuge-konto-abheben 1100))").equals("Saved!")) System.out.println(errMsg);
         //if (!processInput("(konto 100)").equals("1000")) System.out.println(errMsg);
 
-        environment = new Environment();
+        if (!processInput("(define (merge L M)(if (null? L) M (if (null? M) L(if (< (car L) (car M))(cons (car L) (merge (cdr L) M))(cons (car M) (merge (cdr M) L))))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(merge (list 1 3 5 7 8 9 10) (list 2 4 6))").equals("( 1 2 3 4 5 6 7 8 9 10 )")) System.out.println(errMsg);
+        if (!processInput("(merge '(1 3 5 7 8 9 10) '(2 4 6))").equals("( 1 2 3 4 5 6 7 8 9 10 )")) System.out.println(errMsg);
+
+        if (!processInput("(define (odd L)     (if (null? L) '()     (if (null? (cdr L)) (list (car L))     (cons (car L) (odd (cdr (cdr L)))))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(odd (list 1 2 6))").equals("( 1 6 )")) System.out.println(errMsg);
+        if (!processInput("(odd '(1 2 3))").equals("( 1 3 )")) System.out.println(errMsg);
+
+
+        if (!processInput("(define (even L)     (if (null? L) '()          (if (null? (cdr L)) '()               (cons (car (cdr L)) (even (cdr (cdr L)))))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(even (list 1 2 3))").equals("( 2 )")) System.out.println(errMsg);
+        if (!processInput("(even (list 1 2 3))").equals("( 2 )")) System.out.println(errMsg);
+        if (!processInput("(even (list 1 2 3))").equals("( 2 )")) System.out.println(errMsg);
+        if (!processInput("(even '(1 2 3))").equals("( 2 )")) System.out.println(errMsg);
+        if (!processInput("(even '(1 2 3))").equals("( 2 )")) System.out.println(errMsg);
+        if (!processInput("(even '(1 2 3))").equals("( 2 )")) System.out.println(errMsg);
+
+        if (!processInput("(define (split L)     (cons (odd L) (cons (even L) (list ))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(split (list 1 2 8 4 5))").equals("( 1 8 5 2 4 )")) System.out.println(errMsg);
+
+        if (!processInput("(define (mergesort L)     (if (null? L) L          (if (null? (cdr L)) L     (merge     (mergesort (car (split L)))     (mergesort (car (cdr (split L))))))))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(mergesort '(8 1 3 9 6 5 7 2 4 10))").equals("( 1 2 3 4 5 6 7 8 9 10 )")) System.out.println(errMsg);
     }
 
     private static String processInput(String input) {
@@ -226,7 +253,7 @@ public class Main {
                 out =  "null";
             }
             else {
-                if(isQuoted(ret)) out =  "( " + Interpreter.listToString(ret.getChildren().get(1),false)+ ")";
+                if(isQuoted(ret)) out =  "( " + Interpreter.listToString(ret,false)+ ")";
                 else if (isList(ret)) out = "( " + Interpreter.listToString(ret,false) + ")";
                 else if(ret.getToken().getType() == TokenType.LPARENTHESIS) out = Interpreter.listToString(ret.getChildren().get(1),true);
                 else out = ret.getToken().getText();
@@ -241,7 +268,7 @@ public class Main {
 
     private static boolean isQuoted(Entry entry) {
         if (entry.getChildren() == null || entry.getChildren().size() == 0) return false;
-        return entry.getChildren().get(0).getToken().getText().equals("quote");
+        return entry.getChildren().get(0).getToken().getText().equals("quote") || entry.isQoute();
     }
 
     public static boolean isList(Entry entry) {

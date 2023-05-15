@@ -16,12 +16,14 @@ public class Entry {
 	private boolean leaf;
 	private Iterator<Entry> it;
     private Environment procedureEnvironment;
-	
+    private boolean qoute;
+
 	
 	public Entry() {
 		children = null;
 		leaf=true;
 		it = null;
+        qoute=false;
 	}
 	
 	
@@ -29,9 +31,21 @@ public class Entry {
 		this();
 		this.token = token;
 		leaf = token.getType() != TokenType.LPARENTHESIS;
+        qoute=false;
 	}
-	
-	public boolean isLeaf() {
+
+    public boolean isQoute() {
+        return qoute;
+    }
+
+    public void setQoute(boolean qoute) {
+        this.qoute = qoute;
+        if(children!=null) children.forEach((c)-> {
+            if(c!=null) c.setQoute(true);
+        });
+    }
+
+    public boolean isLeaf() {
 		return leaf;
 	}
 	

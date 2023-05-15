@@ -27,6 +27,19 @@ public class Interpreter {
         //Self Evaluating?
         if (entries.size() == 1 && isSelfEvaluating(entries.get(0))) return entries.get(0);
 
+        //quoted?
+        if (isQuoted(entries.get(0))) {
+            return entry;
+        }
+
+        if (isPreQuoted(entries.get(0))) {
+            Entry internalQuote;
+            if (entries.get(1).getChildren() == null) internalQuote = convertListelementsToCons(null, true);
+            else internalQuote = convertListelementsToCons(entries.get(1).getChildren(), true);
+            internalQuote.setQoute(true);
+            return internalQuote;
+        }
+
         //Set
         if(isSet(entries.get(0))){
             String varName = getVarName(entries.get(1));
@@ -69,9 +82,6 @@ public class Interpreter {
 
         //quoted?
         if (isQuoted(entries.get(0))) {
-            entry.getChildren().set(1,convertListelementsToCons(entries.get(1).getChildren(),true));
-            entry = entry.getChildren().get(1);
-            entry.getToken().setType(TokenType.QUOTE);
             return entry;
         }
 
@@ -82,15 +92,14 @@ public class Interpreter {
 
         //isList
         if (isList(entries.get(0))) {
+            Entry evalList = getLParenthesisEntry();
+            evalList.setChildren(new LinkedList<>());
+            evalList.addChildren(new Entry(new Token(TokenType.ELEMENT,"list")));
             for (int i = 1; i < entry.getChildren().size(); i++) {
-                entry.getChildren().set(i, eval(entry.getChildren().get(i), env));
+                evalList.getChildren().add(i, eval(entry.getChildren().get(i), env));
             }
             //Rebuild list to nested cons
-            if (entry.getChildren().size() > 2) {
-                return convertListelementsToCons(entry.getChildren().subList(1,entry.getChildren().size()),false);
-            }
-            if (entry.getChildren().size()==2) entry.getChildren().add(null);
-            return entry;
+            return convertListelementsToCons(evalList.getChildren().subList(1,evalList.getChildren().size()),false);
         }
 
         //isLambda
@@ -275,8 +284,12 @@ public class Interpreter {
         return entry.getToken().getText().equals("cond");
     }
 
-    public static boolean isQuoted(Entry entry) {
+    public static boolean isPreQuoted(Entry entry) {
         return entry.getToken().getType() == TokenType.QUOTE || entry.getToken().getText().equals("quote");
+    }
+
+    public static boolean isQuoted(Entry entry) {
+        return entry.isQoute();
     }
 
     private static boolean isVariable(Entry entry) {
@@ -309,6 +322,9 @@ public class Interpreter {
         return entry.getToken().getType() == TokenType.NUMBER;
     }
 
+    private static boolean isEmptyList(Entry entry){
+        return (entry.getToken().getType()==TokenType.LPARENTHESIS && entry.getChildren()!=null && entry.getChildren().get(1) == null && entry.getChildren().get(2) ==null);
+    }
     private static Entry lookupVarValue(Entry entry, Environment env) {
         if(env==null) return null;
         Entry val = env.variables.get(entry.getToken().getText());
@@ -341,18 +357,18 @@ public class Interpreter {
             if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 2)
                 return null;
             //If quoted return car part as unevaluated String
-            if(isQuoted(arguments.get(0).getChildren().get(0))) return StringToNumberEntry(arguments.get(0).getChildren().get(1).getChildren().get(1).getToken().getText());
+            if(isQuoted(arguments.get(0))) return StringToNumberEntry(arguments.get(0).getChildren().get(1).getToken().getText());
             //return evaluated car-part
             return eval(arguments.get(0).getChildren().get(1), env);
         }
 
         if (operator.equals("cdr")) {
-            if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || (arguments.get(0).getChildren().size() < 3 && !isQuoted(arguments.get(0).getChildren().get(0))))
+            if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 3)
                 return null;
 
             //If param is quoted return all child but the car-part unevaluated
-            if(isQuoted(arguments.get(0).getChildren().get(0))){
-                return arguments.get(0).getChildren().get(1).getChildren().get(2);
+            if(isQuoted(arguments.get(0))){
+                return arguments.get(0).getChildren().get(2);
             }
             //Return evaluated cdr-part
             return eval(arguments.get(0).getChildren().get(2), env);
@@ -362,7 +378,7 @@ public class Interpreter {
             return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0))));
 
         if (operator.equals("null?"))
-            return StringToBooleanEntry(arguments.get(0)==null ? T : F);
+            return StringToBooleanEntry(arguments.get(0)==null || isEmptyList(arguments.get(0)) ? T : F);
 
         if (operator.equals("round"))
             return arguments.get(0);
