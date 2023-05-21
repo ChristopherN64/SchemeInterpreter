@@ -2,7 +2,6 @@ package fh.scheme.parser;
 
 import fh.scheme.interpreter.Environment;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,28 +9,25 @@ public class Entry {
 	public void setToken(Token token) {
 		this.token = token;
 	}
-
+    private EntryType entryType;
 	private Token token;
 	private List<Entry> children;
-	private boolean leaf;
-	private Iterator<Entry> it;
     private Environment procedureEnvironment;
     private boolean qoute;
 
 	
 	public Entry() {
 		children = null;
-		leaf=true;
-		it = null;
         qoute=false;
+        entryType=EntryType.TOKEN_ENTRY;
 	}
 	
 	
 	public Entry(Token token) {
 		this();
 		this.token = token;
-		leaf = token.getType() != TokenType.LPARENTHESIS;
         qoute=false;
+        entryType = EntryType.TOKEN_ENTRY;
 	}
 
     public boolean isQoute() {
@@ -44,10 +40,6 @@ public class Entry {
             if(c!=null) c.setQoute(true);
         });
     }
-
-    public boolean isLeaf() {
-		return leaf;
-	}
 	
 	public Token getToken() {
 		return token;
@@ -64,7 +56,6 @@ public class Entry {
 	public void addChildren(Entry child) {
 		if (children==null) {
 			children = new LinkedList<>();
-			leaf = false;
 		}
 		children.add(child);
 	}
@@ -77,7 +68,15 @@ public class Entry {
         this.procedureEnvironment = procedureEnvironment;
     }
 
-	@Override
+    public EntryType getEntryType() {
+        return entryType;
+    }
+
+    public void setEntryType(EntryType entryType) {
+        this.entryType = entryType;
+    }
+
+    @Override
 	public String toString() {
 		return getToken().getType() + " - " +getToken().getText();
 	}

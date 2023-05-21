@@ -1,6 +1,7 @@
 package fh.scheme.interpreter;
 
 import fh.scheme.parser.Entry;
+import fh.scheme.parser.EntryType;
 import fh.scheme.parser.Token;
 import fh.scheme.parser.TokenType;
 
@@ -104,7 +105,7 @@ public class Interpreter {
 
         //isLambda
         if(isLambda(entry)){
-            return makeProcedure(entries.get(2),entries.get(1).getChildren(),env);
+            return makeProcedure(entries.subList(2,entries.size()),entries.get(1).getChildren(),env);
         }
 
         //Application?
@@ -169,6 +170,7 @@ public class Interpreter {
         body = entry.getChildren().get(2);
 
         if(body.getChildren()!=null && body.getChildren().size()>1 && !argumentNames.isEmpty()){
+            List<Entry> bodys = entry.getChildren().subList(2,entry.getChildren().size());
             Entry args = getLParenthesisEntry();
             args.setChildren(argumentNames);
             //createLambda
@@ -176,7 +178,7 @@ public class Interpreter {
             lambda.setChildren(new LinkedList<>());
             lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
             lambda.getChildren().add(args);
-            lambda.getChildren().add(body);
+            lambda.getChildren().addAll(bodys);
 
             body = lambda;
         }
@@ -189,7 +191,9 @@ public class Interpreter {
             //Extend fh.scheme.interpreter.Environment (Put procedure Arguments in new SubEnvironment
             Environment newEnv = extendEnvironment(getProcedureVars(procedure).stream().map((e)->e.getToken().getText()).collect(Collectors.toList()), arguments,procedure.getProcedureEnvironment());
             //Eval ProcedureBody
-            return eval(getProcedureBody(procedure), newEnv);
+            List<Entry> bodies = getProcedureBody(procedure);
+            bodies.subList(0,bodies.size()-1).forEach((body)->eval(body,newEnv));
+            return eval(bodies.get(bodies.size()-1), newEnv);
         }
     }
 
@@ -203,11 +207,14 @@ public class Interpreter {
         return newEnv;
     }
 
-    private static Entry makeProcedure(Entry body, List<Entry> vars,Environment environment){
+    private static Entry makeProcedure(List<Entry> bodies, List<Entry> vars,Environment environment){
         Entry proc = new Entry();
-        proc.setToken(new Token(TokenType.PROCEDURE,"procedure"));
+        proc.setEntryType(EntryType.PROCEDURE);
+        proc.setToken(new Token(TokenType.ELEMENT,"procedure"));
         proc.setChildren(new LinkedList<>());
-        proc.getChildren().add(body);
+        bodies.forEach(b->b.setEntryType(EntryType.PROCEDURE_BODY));
+        proc.getChildren().addAll(bodies);
+        vars.forEach((v)->v.setEntryType(EntryType.PROCEDURE_VAR));
         proc.getChildren().addAll(vars);
         proc.setProcedureEnvironment(environment);
         return proc;
@@ -336,12 +343,12 @@ public class Interpreter {
         return PRIMITIVE_OPERATORS.contains(procedure.getToken().getText());
     }
 
-    public static Entry getProcedureBody(Entry procedure){
-        return procedure.getChildren().get(0);
+    public static List<Entry> getProcedureBody(Entry procedure){
+        return procedure.getChildren().stream().filter((e)->e.getEntryType()==EntryType.PROCEDURE_BODY).collect(Collectors.toList());
     }
 
     public static List<Entry> getProcedureVars(Entry procedure){
-        return procedure.getChildren().subList(1,procedure.getChildren().size());
+        return procedure.getChildren().stream().filter((e)->e.getEntryType()==EntryType.PROCEDURE_VAR).collect(Collectors.toList());
     }
 
     public static int getListLength(Entry list) {

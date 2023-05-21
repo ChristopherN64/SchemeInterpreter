@@ -12,5 +12,4 @@ public enum TokenType {
     OPERATOR,
     LIST,
     LAMBDA,
-    PROCEDURE
 }

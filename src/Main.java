@@ -54,6 +54,7 @@ public class Main {
         if (!processInput("(let ((a (list 1 2 3))    (b (list 4 5 6)))         (cons a b))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
         if (!processInput("((lambda (a b) (cons a b)) (list 1 2 3) (list 4 5 6))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
         if (!processInput("(define (foo x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
+        //if (!processInput("(define (foo x y) (- 12 2) (+ x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(let ((x 10) (y 20))(foo x y))").equals("30")) System.out.println(errMsg);
 
         //Primitive Functions
@@ -130,6 +131,7 @@ public class Main {
         environment = new Environment();
         if (!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);
         if (!processInput("(if (> 1 2) 1234 5678)").equals("5678")) System.out.println(errMsg);
+        if (!processInput("(cond ((< 12 1)(12)) ((= 34 44) 44 ))").equals("")) System.out.println(errMsg);
         if (!processInput("(cond (#f 12) (#f 11) (#t 42))").equals("42")) System.out.println(errMsg);
         if (!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
@@ -187,6 +189,16 @@ public class Main {
         if (!processInput("(define pro (lambda (x y) (+ x y)))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(pro 1 2)").equals("3")) System.out.println(errMsg);
 
+        //Environment test
+        System.out.println("\nEnvironment Functions");
+        environment = new Environment();
+        if (!processInput("(define (erzeuge-konto-abheben saldo) (lambda (betrag) (set! saldo (- saldo betrag)) saldo))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(define konto (erzeuge-konto-abheben 1100))").equals("Saved!")) System.out.println(errMsg);
+        if (!processInput("(konto 100)").equals("1000")) System.out.println(errMsg);
+        if (!processInput("(konto 100)").equals("900")) System.out.println(errMsg);
+        if (!processInput("(konto 66)").equals("834")) System.out.println(errMsg);
+
+
         //Complex functions
         System.out.println("\nComplex Functions");
         environment = new Environment();
@@ -210,13 +222,6 @@ public class Main {
         if (!processInput("(anhaengen '(3 4) '())").equals("( 3 4 )")) System.out.println(errMsg);
         if (!processInput("(anhaengen '(3) '())").equals("( 3 )")) System.out.println(errMsg);
         if (!processInput("(anhaengen '() '())").equals("( )")) System.out.println(errMsg);
-
-        if (!processInput("(define (erzeuge-konto-abheben saldo)" +
-                "(lambda (betrag)" +
-                "(set! saldo (- saldo betrag))" +
-                "saldo))").equals("Saved!")) System.out.println(errMsg);
-        if (!processInput("(define konto (erzeuge-konto-abheben 1100))").equals("Saved!")) System.out.println(errMsg);
-        //if (!processInput("(konto 100)").equals("1000")) System.out.println(errMsg);
 
         if (!processInput("(define (merge L M)(if (null? L) M (if (null? M) L(if (< (car L) (car M))(cons (car L) (merge (cdr L) M))(cons (car M) (merge (cdr M) L))))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(merge (list 1 3 5 7 8 9 10) (list 2 4 6))").equals("( 1 2 3 4 5 6 7 8 9 10 )")) System.out.println(errMsg);
