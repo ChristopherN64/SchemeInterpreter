@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class Interpreter {
     public static List<String> KEYWORDS = List.of(new String[]{"define","set!", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round","let"});
-    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "cons", "length", "null?","lambda","round"});
+    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=","and","or", "cons", "length", "null?","lambda","round"});
     public static String T = "#t";
     public static String F = "#f";
 
@@ -409,6 +409,11 @@ public class Interpreter {
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) <= Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
         if (operator.equals("="))
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) == Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
+
+        if (operator.equals("or"))
+            return StringToBooleanEntry(arguments.get(0).getToken().getText().replace(" ","").equals(T) || arguments.get(1).getToken().getText().replace(" ","").equals(T) ? T : F);
+        if (operator.equals("and"))
+            return StringToBooleanEntry(arguments.get(0).getToken().getText().replace(" ","").equals(T) && arguments.get(1).getToken().getText().replace(" ","").equals(T) ? T : F);
 
         return StringToNumberEntry("");
     }

@@ -1,31 +1,38 @@
+package fh.scheme;
+
 import fh.scheme.interpreter.Environment;
-import fh.scheme.interpreter.Interpreter;
-import fh.scheme.parser.*;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.List;
+import static fh.scheme.Main.processInput;
 
-public class Main {
-    private static Environment environment;
-
-    public static void main(String[] args) throws IOException {
-        //Tests
-        runTests();
-
-        while (true) {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-            String in = bufferedReader.readLine();
-            processInput(in);
-        }
+public class InterpreterTester {
+    private static String errMsg = "-----------------------ERROR in Test------------------------------";
+    public static void testAll(){
+        runSingleTests();
+        runTestFiles();
     }
 
-    private static void runTests() {
-        String errMsg = "-----------------------ERROR in Test------------------------------";
-        environment = new Environment();
+    public static void runTestFiles(){
+        //Test files
+        System.out.println("\nSimple");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\simple.scm");
+        System.out.println("\nrecursion");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\recursion.scm");
+        System.out.println("\nliste");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\liste.scm");
+        System.out.println("\nlet");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\let.scm");
+        System.out.println("\ncurry");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\curry.scm");
+        System.out.println("\nclosure");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\closure.scm");
+        System.out.println("\nabstraction");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\abstraction.scm");
+        System.out.println("\nmergesort");
+        processInput("load C:\\Users\\nieder\\Downloads\\sbltest\\sbltest\\mergesort.scm");
+    }
+
+    public static void runSingleTests(){
+        Main.environment = new Environment();
 
 
         //Self evaluating
@@ -35,13 +42,13 @@ public class Main {
 
         //Variable definition
         System.out.println("\nVariable Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("var").equals("12")) System.out.println(errMsg);
 
         //Set!
         System.out.println("\nSet! Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("notDef").equals("null")) System.out.println(errMsg);
         if (!processInput("(set! notDef 12)").equals("Variable notDef not found!")) System.out.println(errMsg);
         if (!processInput("(define notDef 12)").equals("Saved!")) System.out.println(errMsg);
@@ -50,7 +57,7 @@ public class Main {
 
         //let
         System.out.println("\nLet Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(let ((a (list 1 2 3))    (b (list 4 5 6)))         (cons a b))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
         if (!processInput("((lambda (a b) (cons a b)) (list 1 2 3) (list 4 5 6))").equals("( 1 2 3 4 5 6 )")) System.out.println(errMsg);
         if (!processInput("(define (foo x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
@@ -59,14 +66,14 @@ public class Main {
 
         //Primitive Functions
         System.out.println("\nPrimitive functions Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(+ 1 2)").equals("3")) System.out.println(errMsg);
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(+ (+ 1 var) (* 10 5))").equals("63")) System.out.println(errMsg);
 
         //comparison operators
         System.out.println("\ncomparison operators Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(#t)").equals("#t")) System.out.println(errMsg);
         if (!processInput("(#f)").equals("#f")) System.out.println(errMsg);
         if (!processInput("(< 1 2)").equals("#t")) System.out.println(errMsg);
@@ -78,7 +85,7 @@ public class Main {
 
         //quote
         System.out.println("\nQuote Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(quote (+ 1 2))").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("'(+ 1 2)").equals("( + 1 2 )")) System.out.println(errMsg);
         if (!processInput("(define quoteVar '(+ 12 3))").equals("Saved!")) System.out.println(errMsg);
@@ -93,7 +100,7 @@ public class Main {
 
         //Lists
         System.out.println("\nList Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(cons 1 2)").equals("( 1 2 )")) System.out.println(errMsg);
         if (!processInput("(cons 1 (cons 2 3))").equals("( 1 2 3 )")) System.out.println(errMsg);
@@ -128,7 +135,7 @@ public class Main {
 
         //if and cond
         System.out.println("\nIf / Cond Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(if (< 1 2) 1234 5678)").equals("1234")) System.out.println(errMsg);
         if (!processInput("(if (> 1 2) 1234 5678)").equals("5678")) System.out.println(errMsg);
         if (!processInput("(cond ((< 12 1)(12)) ((= 34 44) 44 ))").equals("")) System.out.println(errMsg);
@@ -139,7 +146,7 @@ public class Main {
 
         //Length
         System.out.println("\nLength Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define l (cons 1 (cons 2 (cons 3 4))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(length l)").equals("4")) System.out.println(errMsg);
         if (!processInput("(define l (list 1 2 3 4))").equals("Saved!")) System.out.println(errMsg);
@@ -158,7 +165,7 @@ public class Main {
 
         //null?
         System.out.println("\nnull? Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define x 42)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(null? x)").equals("#f")) System.out.println(errMsg);
         if (!processInput("p").equals("null")) System.out.println(errMsg);
@@ -166,13 +173,13 @@ public class Main {
 
         //round
         System.out.println("\nround Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(round (cond ((= var 12) 123) (#t 11) (#t 42)))").equals("123")) System.out.println(errMsg);
 
         //procedure
         System.out.println("\nprocedure Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define (add x y) (+ x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define (minus x y) (- x y))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(add 1 2)").equals("3")) System.out.println(errMsg);
@@ -182,7 +189,7 @@ public class Main {
 
         //Lambda
         System.out.println("\nlambda Tests");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(lambda (x y) (+ x y))").equals("procedure")) System.out.println(errMsg);
         if (!processInput("((lambda (x y) (+ x y)) 1 4)").equals("5")) System.out.println(errMsg);
         if (!processInput("(+ 100 ((lambda (x y) (+ x y)) 1 4))").equals("105")) System.out.println(errMsg);
@@ -191,7 +198,7 @@ public class Main {
 
         //Environment test
         System.out.println("\nEnvironment Functions");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define (erzeuge-konto-abheben saldo) (lambda (betrag) (set! saldo (- saldo betrag)) saldo))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define konto (erzeuge-konto-abheben 1100))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(konto 100)").equals("1000")) System.out.println(errMsg);
@@ -201,7 +208,7 @@ public class Main {
 
         //Complex functions
         System.out.println("\nComplex Functions");
-        environment = new Environment();
+        Main.environment = new Environment();
         if (!processInput("(define (laenge l)(if (null? l) 0 (if (null? (cdr l)) 1 (+ 1 (laenge (cdr l))))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(laenge (list 2 4 3))").equals("3")) System.out.println(errMsg);
         if (!processInput("(laenge '(2 4 3))").equals("3")) System.out.println(errMsg);
@@ -247,38 +254,5 @@ public class Main {
         if (!processInput("(mergesort '(8 1 3 9 6 5 7 2 4 10))").equals("( 1 2 3 4 5 6 7 8 9 10 )")) System.out.println(errMsg);
     }
 
-    private static String processInput(String input) {
-        try {
-            SchemeLexer sl = new SchemeLexer(new ByteArrayInputStream(input.getBytes()));
-            SchemeParser sp = new SchemeParser(sl);
-            List<Entry> entrys = sp.program();
-            Entry ret = Interpreter.eval(entrys.get(0), environment);
-            String out="";
-            if(ret==null) {
-                out =  "null";
-            }
-            else {
-                if(isQuoted(ret)) out =  "( " + Interpreter.listToString(ret,false)+ ")";
-                else if (isList(ret)) out = "( " + Interpreter.listToString(ret,false) + ")";
-                else if(ret.getToken().getType() == TokenType.LPARENTHESIS) out = Interpreter.listToString(ret.getChildren().get(1),true);
-                else out = ret.getToken().getText();
-            }
-            System.out.println(out);
-            return out;
-        } catch (Throwable r) {
-            System.out.println("Ein Fehler ist aufgetreten\n" +r.getMessage()+"\n"+ Arrays.toString(r.getStackTrace()));
-        }
-        return "";
-    }
 
-    private static boolean isQuoted(Entry entry) {
-        if (entry.getChildren() == null || entry.getChildren().size() == 0) return false;
-        return entry.getChildren().get(0).getToken().getText().equals("quote") || entry.isQoute();
-    }
-
-    public static boolean isList(Entry entry) {
-        if (entry.getChildren() == null || entry.getChildren().size() == 0) return false;
-        return entry.getChildren().get(0).getToken().getText().equals("list")
-                || entry.getChildren().get(0).getToken().getText().equals("cons");
-    }
 }
