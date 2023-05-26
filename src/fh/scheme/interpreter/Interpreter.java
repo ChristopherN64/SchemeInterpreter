@@ -112,6 +112,10 @@ public class Interpreter {
             return makeProcedure(entries.subList(2,entries.size()),entries.get(1).getChildren(),env);
         }
 
+        if(isBegin(entries.get(0))){
+            return evalSequence(entries.subList(1,entries.size()),env);
+        }
+
         //Application?
         if (isApplication(entries.get(0))) {
             Entry proc = eval(entries.get(0),env);
@@ -284,6 +288,11 @@ public class Interpreter {
 
     public static boolean isList(Entry entry) {
         return entry.getToken().getText().equals(Keywords.LIST.getKeyword());
+    }
+
+
+    private static boolean isBegin(Entry entry) {
+        return entry.getToken().getText().equals(Keywords.BEGIN.getKeyword());
     }
 
 

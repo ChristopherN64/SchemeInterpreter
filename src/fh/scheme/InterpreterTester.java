@@ -174,6 +174,11 @@ public class InterpreterTester {
         if (!processInput("p").equals("null")) System.out.println(errMsg);
         if (!processInput("(null? p)").equals("#t")) System.out.println(errMsg);
 
+        //begin?
+        System.out.println("\nbegin Tests");
+        Main.environment = new Environment();
+        if (!processInput("(begin (define x 12) (set! x 48)(* x 2))").equals("96")) System.out.println(errMsg);
+
         //round
         System.out.println("\nround Tests");
         Main.environment = new Environment();

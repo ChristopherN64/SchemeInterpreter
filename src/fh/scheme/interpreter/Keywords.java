@@ -17,7 +17,8 @@ public enum Keywords {
     ROUND("round"),
     LET("let"),
     PROCEDURE("procedure"),
-    ELSE("else");
+    ELSE("else"),
+    BEGIN("begin");
 
     private final String keyword;
 
