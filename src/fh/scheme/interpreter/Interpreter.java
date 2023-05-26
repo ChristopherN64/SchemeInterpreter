@@ -352,9 +352,9 @@ public class Interpreter {
     }
 
     public static int getListLength(Entry list) {
-        if(list == null || (list.getChildren()!=null && list.getChildren().size()==1)) return 0;
+        if(list == null ||isEmptyList(list)|| (list.getChildren()!=null && list.getChildren().size()==1)) return 0;
         if(list.getChildren() == null) return 1;
-        return getListLength(list.getChildren().get(1)) + getListLength(list.getChildren().get(2));
+        return 1 + getListLength(list.getChildren().get(2));
     }
 
     private static Entry applyPrimitive(Entry procedure, Environment env, List<Entry> arguments) {

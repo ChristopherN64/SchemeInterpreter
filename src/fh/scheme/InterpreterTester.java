@@ -161,7 +161,7 @@ public class InterpreterTester {
         if (!processInput("(define l (list 1 2 3))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define u (list 4 5))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(define x (list l u))").equals("Saved!")) System.out.println(errMsg);
-        if (!processInput("(length x)").equals("5")) System.out.println(errMsg);
+        if (!processInput("(length x)").equals("2")) System.out.println(errMsg);
 
         //null?
         System.out.println("\nnull? Tests");
@@ -253,6 +253,4 @@ public class InterpreterTester {
         if (!processInput("(define (mergesort L)     (if (null? L) L          (if (null? (cdr L)) L     (merge     (mergesort (car (split L)))     (mergesort (car (cdr (split L))))))))").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(mergesort '(8 1 3 9 6 5 7 2 4 10))").equals("( 1 2 3 4 5 6 7 8 9 10 )")) System.out.println(errMsg);
     }
-
-
 }
