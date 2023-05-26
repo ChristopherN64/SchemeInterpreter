@@ -74,10 +74,16 @@ public class Interpreter {
 
         //cond
         if (isCondCondition(entries.get(0))) {
+            Entry elseEntry = null;
+            if(entries.get(entries.size()-1).getChildren().get(0).getToken().getText().equals("else")){
+                elseEntry = entries.get(entries.size()-1);
+                entries = entries.subList(0,entries.size()-1);
+            }
             for (int i = 1; i < entries.size(); i++) {
                 if (eval(entries.get(i).getChildren().get(0), env).getToken().getText().equals(T))
                     return eval(entries.get(i).getChildren().get(1), env);
             }
+            if(elseEntry!=null) return evalSequence(elseEntry.getChildren().subList(1,elseEntry.getChildren().size()),env);
             return StringToNumberEntry("");
         }
 
@@ -116,6 +122,11 @@ public class Interpreter {
             return apply(proc, env, arguments);
         }
         return StringToNumberEntry("EVAL - ERROR");
+    }
+
+    public static Entry evalSequence(List<Entry> entries,Environment env){
+        entries.subList(0,entries.size()-1).forEach((entry)->eval(entry,env));
+        return eval(entries.get(entries.size()-1), env);
     }
 
     private static Entry buildLambdaCallFromLet(List<Entry> entries) {
@@ -192,8 +203,7 @@ public class Interpreter {
             Environment newEnv = extendEnvironment(getProcedureVars(procedure).stream().map((e)->e.getToken().getText()).collect(Collectors.toList()), arguments,procedure.getProcedureEnvironment());
             //Eval ProcedureBody
             List<Entry> bodies = getProcedureBody(procedure);
-            bodies.subList(0,bodies.size()-1).forEach((body)->eval(body,newEnv));
-            return eval(bodies.get(bodies.size()-1), newEnv);
+            return evalSequence(bodies,newEnv);
         }
     }
 
@@ -318,7 +328,7 @@ public class Interpreter {
     }
 
     private static boolean isSelfEvaluating(Entry entry) {
-        return isNumber(entry) || isBoolean(entry) || PRIMITIVE_OPERATORS.contains(entry.getToken().getText()) || entry.getToken().getType().equals(TokenType.OPERATOR );
+        return isNumber(entry) || isBoolean(entry) || PRIMITIVE_OPERATORS.contains(entry.getToken().getText()) || entry.getToken().getType().equals(TokenType.OPERATOR);
     }
 
     private static boolean isBoolean(Entry entry) {
@@ -410,11 +420,19 @@ public class Interpreter {
         if (operator.equals("="))
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) == Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
 
-        if (operator.equals("or"))
-            return StringToBooleanEntry(arguments.get(0).getToken().getText().replace(" ","").equals(T) || arguments.get(1).getToken().getText().replace(" ","").equals(T) ? T : F);
-        if (operator.equals("and"))
-            return StringToBooleanEntry(arguments.get(0).getToken().getText().replace(" ","").equals(T) && arguments.get(1).getToken().getText().replace(" ","").equals(T) ? T : F);
+        if (operator.equals("or")){
+            for(Entry arg : arguments){
+                if(arg.getToken().getText().replace(" ","").equals(T))  return StringToBooleanEntry(T);
+            }
+            return StringToBooleanEntry(F);
+        }
 
+        if (operator.equals("and")){
+            for(Entry arg : arguments){
+                if(arg.getToken().getText().replace(" ","").equals(F))  return StringToBooleanEntry(F);
+            }
+            return StringToBooleanEntry(T);
+        }
         return StringToNumberEntry("");
     }
 

@@ -143,6 +143,9 @@ public class InterpreterTester {
         if (!processInput("(cond (#f 12) (#t 11) (#t 42))").equals("11")) System.out.println(errMsg);
         if (!processInput("(define var 12)").equals("Saved!")) System.out.println(errMsg);
         if (!processInput("(cond ((= var 12) 123) (#t 11) (#t 42))").equals("123")) System.out.println(errMsg);
+        if (!processInput("(cond (#f 12) (#f 11) (else (+ 1 2)))").equals("3")) System.out.println(errMsg);
+        if (!processInput("(cond (#f 12) (#f 11) (else (+ 1 2) (* 1 2)))").equals("2")) System.out.println(errMsg);
+        if (!processInput("(cond (#f 12) (#f 11) (else (define var 20) (* 2 var)))").equals("40")) System.out.println(errMsg);
 
         //Length
         System.out.println("\nLength Tests");
