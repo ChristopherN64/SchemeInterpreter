@@ -117,17 +117,13 @@ public class Interpreter {
         }
 
         //Application?
-        if (isApplication(entries.get(0))) {
-            Entry proc = eval(entries.get(0),env);
+        Entry proc = eval(entries.get(0),env);
+        if (isApplication(proc)) {
             List<Entry> arguments = entries.subList(1, entries.size());
             arguments.replaceAll(e -> eval(e, env));
             return apply(proc, env, arguments);
         }
         return StringToNumberEntry("EVAL - ERROR");
-    }
-
-    private static boolean isApplication(Entry entry) {
-        return true;
     }
 
     public static Entry evalSequence(List<Entry> entries,Environment env){
@@ -278,6 +274,12 @@ public class Interpreter {
         entry.getChildren().add(child1);
         entry.getChildren().add(child2);
         return entry;
+    }
+
+    private static boolean isApplication(Entry entry) {
+        return entry.getEntryType()==EntryType.PROCEDURE
+                || entry.getToken().getType()==TokenType.OPERATOR
+                || PrimitiveOperator.getStringValues().contains(entry.getToken().getText());
     }
 
     private static boolean isLambda(Entry entry) {
