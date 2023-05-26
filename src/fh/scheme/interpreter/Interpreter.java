@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-    public static List<String> KEYWORDS = List.of(new String[]{"define","set!", "list", "cond", "if", "cons", "list", "quote", "'", "lambda","round","let"});
-    public static List<String> PRIMITIVE_OPERATORS = List.of(new String[]{"car", "cdr", "+", "-", "*", "/", "<", "<=", ">", ">=", "=","and","or", "cons", "length", "null?","lambda","round"});
     public static String T = "#t";
     public static String F = "#f";
 
@@ -75,7 +73,7 @@ public class Interpreter {
         //cond
         if (isCondCondition(entries.get(0))) {
             Entry elseEntry = null;
-            if(entries.get(entries.size()-1).getChildren().get(0).getToken().getText().equals("else")){
+            if(entries.get(entries.size()-1).getChildren().get(0).getToken().getText().equals(Keywords.ELSE.getKeyword())){
                 elseEntry = entries.get(entries.size()-1);
                 entries = entries.subList(0,entries.size()-1);
             }
@@ -101,7 +99,7 @@ public class Interpreter {
         if (isList(entries.get(0))) {
             Entry evalList = getLParenthesisEntry();
             evalList.setChildren(new LinkedList<>());
-            evalList.addChildren(new Entry(new Token(TokenType.ELEMENT,"list")));
+            evalList.addChildren(new Entry(new Token(TokenType.ELEMENT,Keywords.LIST.getKeyword())));
             for (int i = 1; i < entry.getChildren().size(); i++) {
                 evalList.getChildren().add(i, eval(entry.getChildren().get(i), env));
             }
@@ -122,6 +120,10 @@ public class Interpreter {
             return apply(proc, env, arguments);
         }
         return StringToNumberEntry("EVAL - ERROR");
+    }
+
+    private static boolean isApplication(Entry entry) {
+        return true;
     }
 
     public static Entry evalSequence(List<Entry> entries,Environment env){
@@ -148,7 +150,7 @@ public class Interpreter {
 
         Entry lambda = getLParenthesisEntry();
         lambda.setChildren(new LinkedList<>());
-        lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
+        lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,Keywords.LAMBDA.getKeyword())));
 
         lambda.getChildren().add(lambdaVars);
         lambda.getChildren().add(lambdaBody);
@@ -187,7 +189,7 @@ public class Interpreter {
             //createLambda
             Entry lambda = getLParenthesisEntry();
             lambda.setChildren(new LinkedList<>());
-            lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,"lambda")));
+            lambda.getChildren().add(new Entry(new Token(TokenType.ELEMENT,Keywords.LAMBDA.getKeyword())));
             lambda.getChildren().add(args);
             lambda.getChildren().addAll(bodys);
 
@@ -220,7 +222,7 @@ public class Interpreter {
     private static Entry makeProcedure(List<Entry> bodies, List<Entry> vars,Environment environment){
         Entry proc = new Entry();
         proc.setEntryType(EntryType.PROCEDURE);
-        proc.setToken(new Token(TokenType.ELEMENT,"procedure"));
+        proc.setToken(new Token(TokenType.ELEMENT,Keywords.PROCEDURE.getKeyword()));
         proc.setChildren(new LinkedList<>());
         bodies.forEach(b->b.setEntryType(EntryType.PROCEDURE_BODY));
         proc.getChildren().addAll(bodies);
@@ -263,7 +265,7 @@ public class Interpreter {
         Entry entry = new Entry();
         entry.setToken(new Token(TokenType.LPARENTHESIS, "("));
         entry.setChildren(new LinkedList<>());
-        entry.getChildren().add(new Entry(new Token(TokenType.ELEMENT, "cons")));
+        entry.getChildren().add(new Entry(new Token(TokenType.ELEMENT, Keywords.CONS.getKeyword())));
         return entry;
     }
 
@@ -277,32 +279,27 @@ public class Interpreter {
     private static boolean isLambda(Entry entry) {
         return(entry.getChildren() != null
                 && entry.getChildren().size() > 0
-                && entry.getChildren().get(0).getToken().getText().equals("lambda"));
+                && entry.getChildren().get(0).getToken().getText().equals(Keywords.LAMBDA.getKeyword()));
     }
 
     public static boolean isList(Entry entry) {
-        return entry.getToken().getText().equals("list");
+        return entry.getToken().getText().equals(Keywords.LIST.getKeyword());
     }
 
 
     private static boolean isCons(Entry entry) {
-        return entry.getToken().getText().equals("cons");
+        return entry.getToken().getText().equals(Keywords.CONS.getKeyword());
     }
-
-    private static boolean isApplication(Entry entry) {
-        return true;
-    }
-
     private static boolean isIfCondition(Entry entry) {
-        return entry.getToken().getText().equals("if");
+        return entry.getToken().getText().equals(Keywords.IF.getKeyword());
     }
 
     private static boolean isCondCondition(Entry entry) {
-        return entry.getToken().getText().equals("cond");
+        return entry.getToken().getText().equals(Keywords.COND.getKeyword());
     }
 
     public static boolean isPreQuoted(Entry entry) {
-        return entry.getToken().getType() == TokenType.QUOTE || entry.getToken().getText().equals("quote");
+        return entry.getToken().getType() == TokenType.QUOTE || entry.getToken().getText().equals(Keywords.QUOTE.getKeyword());
     }
 
     public static boolean isQuoted(Entry entry) {
@@ -311,24 +308,24 @@ public class Interpreter {
 
     private static boolean isVariable(Entry entry) {
         return entry!=null && entry.getToken().getType() == TokenType.ELEMENT
-                && !KEYWORDS.contains(entry.getToken().getText())
-                && !PRIMITIVE_OPERATORS.contains(entry.getToken().getText());
+                && !Keywords.getStringValues().contains(entry.getToken().getText())
+                && !PrimitiveOperator.getStringValues().contains(entry.getToken().getText());
     }
 
     private static boolean isDefinition(Entry entry) {
-        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("define");
+        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals(Keywords.DEFINE.getKeyword());
     }
 
     private static boolean isSet(Entry entry) {
-        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("set!");
+        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals(Keywords.SET.getKeyword());
     }
 
     private static boolean isLet(Entry entry) {
-        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals("let");
+        return entry.getToken().getType() == TokenType.ELEMENT && entry.getToken().getText().equals(Keywords.LET.getKeyword());
     }
 
     private static boolean isSelfEvaluating(Entry entry) {
-        return isNumber(entry) || isBoolean(entry) || PRIMITIVE_OPERATORS.contains(entry.getToken().getText()) || entry.getToken().getType().equals(TokenType.OPERATOR);
+        return isNumber(entry) || isBoolean(entry) || PrimitiveOperator.getStringValues().contains(entry.getToken().getText()) || entry.getToken().getType().equals(TokenType.OPERATOR);
     }
 
     private static boolean isBoolean(Entry entry) {
@@ -350,7 +347,7 @@ public class Interpreter {
     }
 
     private static boolean primitiveProcedure(Entry procedure) {
-        return PRIMITIVE_OPERATORS.contains(procedure.getToken().getText());
+        return PrimitiveOperator.getStringValues().contains(procedure.getToken().getText());
     }
 
     public static List<Entry> getProcedureBody(Entry procedure){
@@ -368,9 +365,9 @@ public class Interpreter {
     }
 
     private static Entry applyPrimitive(Entry procedure, Environment env, List<Entry> arguments) {
-        String operator = procedure.getToken().getText();
+        PrimitiveOperator primitiveOperator = PrimitiveOperator.get(procedure.getToken().getText());
 
-        if (operator.equals("car")) {
+        if (primitiveOperator == PrimitiveOperator.CAR) {
             if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 2)
                 return null;
             //If quoted return car part as unevaluated String
@@ -379,7 +376,7 @@ public class Interpreter {
             return eval(arguments.get(0).getChildren().get(1), env);
         }
 
-        if (operator.equals("cdr")) {
+        if (primitiveOperator == PrimitiveOperator.CDR) {
             if (arguments == null || arguments.size() < 1 || arguments.get(0).getChildren() == null || arguments.get(0).getChildren().size() < 3)
                 return null;
 
@@ -391,43 +388,43 @@ public class Interpreter {
             return eval(arguments.get(0).getChildren().get(2), env);
         }
 
-        if (operator.equals("length"))
+        if (primitiveOperator == PrimitiveOperator.LENGTH)
             return StringToNumberEntry(String.valueOf(getListLength(arguments.get(0))));
 
-        if (operator.equals("null?"))
+        if (primitiveOperator == PrimitiveOperator.NULL)
             return StringToBooleanEntry(arguments.get(0)==null || isEmptyList(arguments.get(0)) ? T : F);
 
-        if (operator.equals("round"))
+        if (primitiveOperator == PrimitiveOperator.ROUND)
             return arguments.get(0);
 
-        if (operator.equals("*"))
+        if (primitiveOperator == PrimitiveOperator.MULT)
             return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a * b).get().toString());
-        if (operator.equals("/"))
+        if (primitiveOperator == PrimitiveOperator.DIV)
             return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a / b).get().toString());
-        if (operator.equals("+"))
+        if (primitiveOperator.equals(PrimitiveOperator.PLUS))
             return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a + b).get().toString());
-        if (operator.equals("-"))
+        if (primitiveOperator == PrimitiveOperator.MINUS)
             return StringToNumberEntry(arguments.stream().map((e) -> Integer.parseInt(e.getToken().getText().replace(" ",""))).reduce((a, b) -> a - b).get().toString());
 
-        if (operator.equals(">"))
+        if (primitiveOperator == PrimitiveOperator.GREATER)
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) > Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
-        if (operator.equals(">="))
+        if (primitiveOperator == PrimitiveOperator.GREATEREQ)
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) >= Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
-        if (operator.equals("<"))
+        if (primitiveOperator == PrimitiveOperator.LESS)
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) < Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
-        if (operator.equals("<="))
+        if (primitiveOperator == PrimitiveOperator.LESSEQ)
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) <= Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
-        if (operator.equals("="))
+        if (primitiveOperator == PrimitiveOperator.EQ)
             return StringToBooleanEntry(Integer.parseInt(arguments.get(0).getToken().getText().replace(" ","")) == Integer.parseInt(arguments.get(1).getToken().getText().replace(" ","")) ? T : F);
 
-        if (operator.equals("or")){
+        if (primitiveOperator == PrimitiveOperator.OR){
             for(Entry arg : arguments){
                 if(arg.getToken().getText().replace(" ","").equals(T))  return StringToBooleanEntry(T);
             }
             return StringToBooleanEntry(F);
         }
 
-        if (operator.equals("and")){
+        if (primitiveOperator == PrimitiveOperator.AND){
             for(Entry arg : arguments){
                 if(arg.getToken().getText().replace(" ","").equals(F))  return StringToBooleanEntry(F);
             }
@@ -451,7 +448,7 @@ public class Interpreter {
         if (list != null) {
             String text = list.getToken().getText();
             if(text==null) text = "";
-            if (withListTextElements || (!text.equals("list") && !text.equals("cons") && !text.equals("(")))
+            if (withListTextElements || (!text.equals(Keywords.LIST.getKeyword()) && !text.equals(Keywords.CONS.getKeyword()) && !text.equals("(")))
                 ret.append(text).append(" ");
             if (list.getChildren() != null) {
                 List<Entry> children = list.getChildren();
