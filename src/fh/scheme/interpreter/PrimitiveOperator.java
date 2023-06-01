@@ -41,7 +41,7 @@ public enum PrimitiveOperator {
                 .findFirst().orElse(null);
     }
 
-    public static List<String> getStringValues(){
+    public static List<String> getStringValues() {
         return Arrays.stream(values()).map(PrimitiveOperator::getOperator).collect(Collectors.toList());
     }
 }

@@ -36,7 +36,7 @@ public enum Keywords {
                 .findFirst().orElse(null);
     }
 
-    public static List<String> getStringValues(){
+    public static List<String> getStringValues() {
         return Arrays.stream(values()).map(Keywords::getKeyword).collect(Collectors.toList());
     }
 }

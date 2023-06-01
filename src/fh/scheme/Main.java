@@ -33,55 +33,53 @@ public class Main {
     }
 
     public static String processInput(String input) {
-        String content="";
+        String content = "";
 
-        if(input.startsWith("load ")){
+        if (input.startsWith("load ")) {
             content = readFile(input);
-        }
-        else content = input;
+        } else content = input;
 
         try {
             SchemeLexer sl = new SchemeLexer(new ByteArrayInputStream(content.getBytes()));
             SchemeParser sp = new SchemeParser(sl);
             List<Entry> entries = sp.program();
-            String out="";
-            for(Entry entry : entries){
+            String out = "";
+            for (Entry entry : entries) {
                 out = processOneEntry(entry);
             }
             return out;
         } catch (Throwable r) {
-            System.out.println("Ein Fehler ist aufgetreten\n" +r.getMessage()+"\n"+ Arrays.toString(r.getStackTrace()));
+            System.out.println("Ein Fehler ist aufgetreten\n" + r.getMessage() + "\n" + Arrays.toString(r.getStackTrace()));
         }
         return "";
     }
 
-    private static String processOneEntry(Entry entry)
-    {
+    private static String processOneEntry(Entry entry) {
         Entry ret = Interpreter.eval(entry, environment);
-        String output=formatOutput(ret);
+        String output = formatOutput(ret);
         System.out.println(output);
         return output;
     }
 
     private static String formatOutput(Entry ret) {
         String out;
-        if(ret==null) return "null";
-        if(isQuoted(ret)) out =  "( " + Interpreter.listToString(ret,false)+ ")";
-        else if (isList(ret)) out = "( " + Interpreter.listToString(ret,false) + ")";
-        else if(ret.getToken().getType() == TokenType.LPARENTHESIS) out = Interpreter.listToString(ret.getChildren().get(1),true);
+        if (ret == null) return "null";
+        if (isQuoted(ret)) out = "( " + Interpreter.listToString(ret, false) + ")";
+        else if (isList(ret)) out = "( " + Interpreter.listToString(ret, false) + ")";
+        else if (ret.getToken().getType() == TokenType.LPARENTHESIS)
+            out = Interpreter.listToString(ret.getChildren().get(1), true);
         else out = ret.getToken().getText();
         return out;
     }
 
 
-
     private static String readFile(String input) {
         String content;
         try {
-            Path filePath = Path.of(input.split(" ")[1].replace(" ",""));
+            Path filePath = Path.of(input.split(" ")[1].replace(" ", ""));
             content = Files.readString(filePath);
-            content = content.replace("  "," ");
-            content = content.replace("\n\n","\n");
+            content = content.replace("  ", " ");
+            content = content.replace("\n\n", "\n");
             environment = new Environment();
             return content;
         } catch (IOException e) {
