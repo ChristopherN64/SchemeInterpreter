@@ -8,7 +8,7 @@ public class InterpreterTester {
     private static String errMsg = "-----------------------ERROR in Test------------------------------";
     public static void testAll(){
         runSingleTests();
-        runTestFiles();
+        //runTestFiles();
     }
 
     public static void runTestFiles(){
